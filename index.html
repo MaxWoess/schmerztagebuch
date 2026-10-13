@@ -1,0 +1,1276 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Schmerztagebuch</title>
+<meta name="description" content="Schmerz pro Körperstelle täglich erfassen und über Tage, Wochen und Monate auswerten.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Schmerz">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fbfaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161615" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fbfaf8;
+  --surface: #ffffff;
+  --surface-2: #f3f2ef;
+  --line: #e4e2dd;
+  --grid: #ecebe7;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --text-3: #7d7c78;
+  --accent: #c4502a;
+  --accent-ink: #ffffff;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --good: #0ca30c;
+  --critical: #d03b3b;
+  --good-text: #006300;
+  --critical-text: #b42c2c;
+  --shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.05);
+  /* Schmerz-Ramp 1..10, ein Farbton (warm), hell -> dunkel */
+  --p0: #f3f2ef;
+  --p1: #fdeee6; --p2: #fbdccc; --p3: #f8c3a8; --p4: #f5a683; --p5: #ef8a5f;
+  --p6: #e66d3f; --p7: #d1532a; --p8: #b3401f; --p9: #8f3118; --p10: #6b2412;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #161615;
+    --surface: #1f1f1e;
+    --surface-2: #2a2a28;
+    --line: #383835;
+    --grid: #2e2e2c;
+    --text: #f0efec;
+    --text-2: #c3c2b7;
+    --text-3: #8f8e86;
+    --accent: #e0703f;
+    --accent-ink: #1a1a19;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --good-text: #4cc94c;
+    --critical-text: #f07a7a;
+    --shadow: none;
+    --p0: #2a2a28;
+    --p1: #3b2a22; --p2: #4e3022; --p3: #653623; --p4: #7e3c22; --p5: #9a4422;
+    --p6: #b84f26; --p7: #d2602f; --p8: #e57c4c; --p9: #f29c72; --p10: #ffc2a1;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #161615; --surface: #1f1f1e; --surface-2: #2a2a28; --line: #383835; --grid: #2e2e2c;
+  --text: #f0efec; --text-2: #c3c2b7; --text-3: #8f8e86; --accent: #e0703f; --accent-ink: #1a1a19;
+  --series-1: #3987e5; --series-2: #d95926; --good-text: #4cc94c; --critical-text: #f07a7a; --shadow: none;
+  --p0: #2a2a28;
+  --p1: #3b2a22; --p2: #4e3022; --p3: #653623; --p4: #7e3c22; --p5: #9a4422;
+  --p6: #b84f26; --p7: #d2602f; --p8: #e57c4c; --p9: #f29c72; --p10: #ffc2a1;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  padding: env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom));
+  -webkit-text-size-adjust: 100%;
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+main { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+h1 { font-size: 28px; line-height: 1.15; margin: 16px 0 12px; letter-spacing: -0.01em; }
+h2 { font-size: 17px; margin: 0 0 4px; }
+.sub { color: var(--text-2); font-size: 14px; margin: 0 0 12px; }
+.muted { color: var(--text-3); }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  margin: 0 0 14px;
+  box-shadow: var(--shadow);
+}
+.view { display: none; }
+.view.active { display: block; }
+
+/* Tab-Leiste */
+nav.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: flex; justify-content: center;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+  padding: 4px 8px calc(4px + env(safe-area-inset-bottom));
+}
+nav.tabs button {
+  flex: 1; max-width: 160px; background: none; border: 0; padding: 6px 4px 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: 11px; color: var(--text-3);
+}
+nav.tabs button svg { width: 24px; height: 24px; }
+nav.tabs button.active { color: var(--accent); }
+
+/* Buttons & Chips */
+.btn {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 10px;
+  padding: 9px 14px; font-size: 15px; min-height: 40px;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn.danger { color: var(--critical-text); }
+.btn:active { opacity: .7; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
+  padding: 6px 12px; font-size: 14px; min-height: 34px;
+}
+.chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.seg { display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 2px; gap: 2px; }
+.seg button { border: 0; background: none; border-radius: 8px; padding: 6px 10px; font-size: 14px; color: var(--text-2); min-height: 32px; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+
+/* Kalender */
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 10px; }
+.cal-head h2 { font-size: 20px; margin: 0; }
+.icon-btn { width: 40px; height: 40px; border-radius: 20px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; }
+.icon-btn svg { width: 20px; height: 20px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-dow { text-align: center; font-size: 12px; color: var(--text-3); padding-bottom: 2px; }
+.cal-day {
+  aspect-ratio: 1 / 1.05; border-radius: 10px; border: 0; background: var(--surface-2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative; padding: 0; min-width: 0;
+}
+.cal-day .d { font-size: 13px; color: var(--text-2); line-height: 1; }
+.cal-day .v { font-size: 17px; font-weight: 700; line-height: 1.1; margin-top: 2px; }
+.cal-day.out { visibility: hidden; }
+.cal-day.future { opacity: .45; }
+.cal-day.today { outline: 2px solid var(--text); outline-offset: 1px; }
+.cal-day .note-dot { position: absolute; top: 5px; right: 6px; width: 6px; height: 6px; border-radius: 3px; background: currentColor; opacity: .7; }
+.legend-ramp { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-3); margin-top: 10px; }
+.legend-ramp .sw { display: flex; gap: 2px; }
+.legend-ramp .sw i { width: 16px; height: 12px; border-radius: 3px; display: block; }
+.month-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+
+/* Tiles */
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+@media (min-width: 560px) { .tiles { grid-template-columns: repeat(4, 1fr); } }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; box-shadow: var(--shadow); }
+.tile .k { font-size: 13px; color: var(--text-2); }
+.tile .n { font-size: 28px; font-weight: 700; line-height: 1.15; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.tile .s { font-size: 12px; color: var(--text-3); }
+.delta-up { color: var(--critical-text); }
+.delta-down { color: var(--good-text); }
+.month-stats .tile { padding: 10px; }
+.month-stats .tile .n { font-size: 22px; }
+
+/* Tageseintrag */
+.day-head { display: flex; align-items: center; gap: 8px; margin: 14px 0 6px; }
+.day-head .title { flex: 1; text-align: center; }
+.day-head .title b { display: block; font-size: 19px; }
+.day-head .title span { font-size: 13px; color: var(--text-3); }
+.summary { display: flex; justify-content: center; gap: 14px; font-size: 14px; color: var(--text-2); margin-bottom: 12px; font-variant-numeric: tabular-nums; }
+.summary b { color: var(--text); }
+details.group { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 10px; box-shadow: var(--shadow); }
+details.group > summary {
+  list-style: none; padding: 12px 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer;
+}
+details.group > summary::-webkit-details-marker { display: none; }
+details.group > summary .cnt { margin-left: auto; font-weight: 400; font-size: 13px; color: var(--text-3); }
+details.group > summary .chev { transition: transform .15s; width: 16px; height: 16px; color: var(--text-3); }
+details.group[open] > summary .chev { transform: rotate(90deg); }
+.region { padding: 8px 14px 10px; border-top: 1px solid var(--line); }
+.region .name { font-size: 15px; margin-bottom: 4px; }
+.region .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.slot { display: grid; grid-template-columns: auto 1fr 28px; align-items: center; gap: 6px; }
+.slot .side { font-size: 12px; color: var(--text-3); width: 12px; }
+.slot .val { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 16px; }
+.slot .val.zero { color: var(--text-3); font-weight: 400; }
+input[type=range] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 36px; background: transparent; margin: 0;
+  --fill: 0%; --c: var(--p0);
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height: 8px; border-radius: 4px;
+  background: linear-gradient(to right, var(--c) 0 var(--fill), var(--surface-2) var(--fill) 100%);
+}
+input[type=range]::-moz-range-track { height: 8px; border-radius: 4px; background: var(--surface-2); }
+input[type=range]::-moz-range-progress { height: 8px; border-radius: 4px; background: var(--c); }
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 26px; height: 26px; border-radius: 13px; margin-top: -9px;
+  background: #fff; border: 1px solid rgba(0,0,0,.15); box-shadow: 0 1px 4px rgba(0,0,0,.25);
+}
+input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border-radius: 13px; background: #fff; border: 1px solid rgba(0,0,0,.15); }
+textarea {
+  width: 100%; min-height: 110px; resize: vertical; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--surface); padding: 10px; font-size: 16px;
+}
+.field-label { font-weight: 600; margin: 0 0 8px; display: block; }
+.saved-hint { font-size: 13px; color: var(--text-3); text-align: center; min-height: 18px; margin: 6px 0; }
+
+/* Auswertung */
+.filters { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.filters .row { gap: 6px; }
+select {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 7px 10px; font-size: 15px; min-height: 36px; max-width: 100%;
+}
+.chart-wrap { position: relative; width: 100%; }
+.chart-wrap svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+.axis text, .chart-wrap text { font-size: 11px; fill: var(--text-3); font-variant-numeric: tabular-nums; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--text-2); margin: 2px 0 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
+.tooltip {
+  position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 9px; font-size: 13px; box-shadow: 0 4px 14px rgba(0,0,0,.15);
+  white-space: nowrap; display: none; z-index: 5;
+}
+.tooltip .t { color: var(--text-3); font-size: 12px; margin-bottom: 2px; }
+.tooltip .r { display: flex; align-items: center; gap: 6px; }
+.tooltip .r i { width: 10px; height: 2px; display: inline-block; }
+.tooltip .r b { font-variant-numeric: tabular-nums; }
+.tooltip .r span { color: var(--text-2); }
+.empty { color: var(--text-3); font-size: 14px; padding: 20px 0; text-align: center; }
+table.data { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+table.data th, table.data td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+table.data th { color: var(--text-2); font-weight: 600; font-size: 13px; }
+table.data td.num, table.data th.num { text-align: right; }
+.table-toggle { background: none; border: 0; color: var(--text-2); font-size: 13px; padding: 6px 0 0; text-decoration: underline; }
+.bar-row { display: grid; grid-template-columns: minmax(96px, 38%) 1fr 64px; align-items: center; gap: 8px; padding: 4px 0; font-size: 14px; }
+.bar-row .lbl { overflow-wrap: anywhere; line-height: 1.25; }
+.bar-row .track { height: 14px; position: relative; }
+.bar-row .bar { height: 14px; border-radius: 0 4px 4px 0; background: var(--series-1); min-width: 2px; }
+.bar-row .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }
+.bar-row .num small { color: var(--text-3); display: block; font-size: 11px; line-height: 1; }
+.cmp-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 4px 12px; align-items: baseline; font-size: 14px; padding: 6px 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.cmp-row:last-child { border-bottom: 0; }
+.cmp-row.h { color: var(--text-2); font-size: 12px; font-weight: 600; }
+
+/* Daten */
+.banner { background: var(--surface-2); border-radius: 12px; padding: 10px 12px; font-size: 14px; margin: 0 0 14px; display: flex; gap: 10px; align-items: center; }
+.banner b { color: var(--text); }
+.banner .btn { margin-left: auto; padding: 6px 10px; min-height: 32px; font-size: 14px; }
+.stack { display: flex; flex-direction: column; gap: 8px; }
+.stack .btn { width: 100%; text-align: left; }
+.small { font-size: 13px; color: var(--text-2); }
+.toast {
+  position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  background: var(--text); color: var(--bg); border-radius: 10px; padding: 8px 14px; font-size: 14px;
+  opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 30;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<main>
+
+<!-- ================= Kalender ================= -->
+<section class="view active" id="view-cal">
+  <h1>Schmerztagebuch</h1>
+  <div id="backup-banner"></div>
+  <div class="card">
+    <div class="cal-head">
+      <button class="icon-btn" id="cal-prev" aria-label="Voriger Monat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <h2 id="cal-title"></h2>
+      <button class="icon-btn" id="cal-next" aria-label="Nächster Monat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="legend-ramp">
+      <span>Stärkster Schmerz des Tages:</span>
+      <span>1</span><span class="sw" id="ramp-sw"></span><span>10</span>
+    </div>
+  </div>
+  <div class="month-stats" id="month-stats"></div>
+  <p class="small" style="margin-top:12px">Tippe auf einen Tag, um ihn einzutragen. Ein Punkt rechts oben heißt: Notiz vorhanden.</p>
+</section>
+
+<!-- ================= Tageseintrag ================= -->
+<section class="view" id="view-day">
+  <div class="day-head">
+    <button class="icon-btn" id="day-prev" aria-label="Vortag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <div class="title"><b id="day-title"></b><span id="day-subtitle"></span></div>
+    <button class="icon-btn" id="day-next" aria-label="Nächster Tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+  <div class="summary" id="day-summary"></div>
+  <div class="row" style="justify-content:center; margin-bottom:12px">
+    <button class="btn" id="day-today">Heute</button>
+    <button class="btn" id="day-free">Schmerzfrei</button>
+    <button class="btn" id="day-copy">Wie letzter Eintrag</button>
+  </div>
+  <div id="regions"></div>
+
+  <div class="card">
+    <span class="field-label">Schnell-Markierungen</span>
+    <div class="chips" id="day-tags"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="tag-add">+ Markierung</button>
+    </div>
+  </div>
+  <div class="card">
+    <label class="field-label" for="day-note">Notizen</label>
+    <textarea id="day-note" placeholder="z. B. 400 mg Ibuprofen um 8 Uhr, 30 min Laufen, viel Stress in der Arbeit, schlecht geschlafen …"></textarea>
+  </div>
+  <div class="saved-hint" id="saved-hint"></div>
+  <div class="row" style="justify-content:center; margin-bottom: 24px">
+    <button class="btn danger" id="day-clear">Eintrag dieses Tages löschen</button>
+  </div>
+</section>
+
+<!-- ================= Auswertung ================= -->
+<section class="view" id="view-stats">
+  <h1>Auswertung</h1>
+  <div class="filters">
+    <div class="seg" id="f-range" role="group" aria-label="Zeitraum">
+      <button data-v="7">7 T</button><button data-v="30">30 T</button><button data-v="90">3 M</button><button data-v="182">6 M</button><button data-v="365">12 M</button><button data-v="all">Alles</button>
+    </div>
+    <div class="row">
+      <div class="seg" id="f-group" role="group" aria-label="Gruppierung">
+        <button data-v="day">Tage</button><button data-v="week">Wochen</button><button data-v="month">Monate</button>
+      </div>
+      <div class="seg" id="f-metric" role="group" aria-label="Kennzahl">
+        <button data-v="avg">Ø</button><button data-v="max">Max</button>
+      </div>
+    </div>
+    <div class="row">
+      <label for="f-region" class="small">Vergleichen mit Körperstelle:</label>
+      <select id="f-region"></select>
+    </div>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="card">
+    <h2 id="trend-title">Verlauf</h2>
+    <p class="sub" id="trend-sub"></p>
+    <div class="legend" id="trend-legend"></div>
+    <div class="chart-wrap" id="trend-chart"></div>
+    <button class="table-toggle" id="trend-table-toggle">Als Tabelle anzeigen</button>
+    <div id="trend-table" hidden></div>
+  </div>
+
+  <div class="card">
+    <h2>Körperstellen</h2>
+    <p class="sub">Durchschnittlicher Schmerz je Stelle über alle erfassten Tage im Zeitraum (Tage ohne Wert zählen als 0). Darunter: an wie vielen Tagen die Stelle wehgetan hat.</p>
+    <div id="region-bars"></div>
+  </div>
+
+  <div class="card">
+    <h2>Zeiträume vergleichen</h2>
+    <p class="sub" id="cmp-sub"></p>
+    <div id="period-cmp"></div>
+  </div>
+
+  <div class="card">
+    <h2>Markierungen &amp; Schmerz</h2>
+    <p class="sub">Durchschnittlicher Tagesschmerz an Tagen mit bzw. ohne Markierung. Zeigt Zusammenhänge, keine Ursachen.</p>
+    <div id="tag-cmp"></div>
+  </div>
+
+  <div class="card">
+    <h2>Wochentage</h2>
+    <p class="sub">Durchschnittlicher Tagesschmerz je Wochentag im Zeitraum.</p>
+    <div id="weekday-bars"></div>
+  </div>
+</section>
+
+<!-- ================= Daten ================= -->
+<section class="view" id="view-data">
+  <h1>Daten &amp; Sicherung</h1>
+  <div class="card">
+    <h2>Speicherort</h2>
+    <p class="small" id="storage-info"></p>
+  </div>
+  <div class="card">
+    <h2>Sicherung exportieren</h2>
+    <p class="small">Speichert alle Einträge als Datei (z. B. in „Dateien“ → iCloud Drive). Empfohlen: alle 1–2 Wochen.</p>
+    <div class="stack">
+      <button class="btn primary" id="export-json">Sicherung speichern (.json)</button>
+      <button class="btn" id="export-csv">Tabelle für Excel/Numbers (.csv)</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Sicherung laden</h2>
+    <p class="small">Lädt eine zuvor gespeicherte .json-Datei. Du kannst sie mit den vorhandenen Einträgen zusammenführen oder alles ersetzen.</p>
+    <div class="stack">
+      <button class="btn" id="import-merge">Laden &amp; zusammenführen</button>
+      <button class="btn" id="import-replace">Laden &amp; alles ersetzen</button>
+    </div>
+    <input type="file" id="import-file" accept=".json,application/json" hidden>
+  </div>
+  <div class="card">
+    <h2>Markierungen verwalten</h2>
+    <p class="small">Tippe auf eine Markierung, um sie aus der Auswahl zu entfernen (bestehende Einträge bleiben erhalten).</p>
+    <div class="chips" id="tag-manage"></div>
+  </div>
+  <div class="card">
+    <h2>Alles löschen</h2>
+    <p class="small">Entfernt alle Einträge von diesem Gerät. Vorher eine Sicherung speichern!</p>
+    <button class="btn danger" id="wipe">Alle Daten löschen</button>
+  </div>
+</section>
+</main>
+
+<nav class="tabs" id="tabs">
+  <button data-view="cal" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Kalender</button>
+  <button data-view="day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Eintrag</button>
+  <button data-view="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16M6 15l4-5 3 3 5-7"/></svg>Auswertung</button>
+  <button data-view="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19h14"/></svg>Sicherung</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------ *
+ * Körperstellen (Kopf bis Fuß). pair = links/rechts getrennt erfasst.
+ * ------------------------------------------------------------------ */
+const GROUPS = [
+  { name: "Kopf & Hals", regions: [
+    { id: "kopf", name: "Kopf" },
+    { id: "gesicht", name: "Gesicht / Kiefer" },
+    { id: "nacken", name: "Nacken / Halswirbelsäule" },
+  ]},
+  { name: "Schultern & Arme", regions: [
+    { id: "schulter", name: "Schulter", pair: true },
+    { id: "oberarm", name: "Oberarm", pair: true },
+    { id: "ellbogen", name: "Ellbogen", pair: true },
+    { id: "unterarm", name: "Unterarm", pair: true },
+    { id: "handgelenk", name: "Handgelenk", pair: true },
+    { id: "hand", name: "Hand / Finger", pair: true },
+  ]},
+  { name: "Rumpf", regions: [
+    { id: "brust", name: "Brust / Rippen" },
+    { id: "bauch", name: "Bauch" },
+    { id: "ruecken_o", name: "Oberer Rücken / Brustwirbelsäule" },
+    { id: "ruecken_u", name: "Unterer Rücken / Lendenwirbelsäule" },
+    { id: "becken", name: "Becken / Leiste" },
+    { id: "gesaess", name: "Gesäß / Steißbein" },
+  ]},
+  { name: "Hüfte & Beine", regions: [
+    { id: "huefte", name: "Hüfte", pair: true },
+    { id: "oberschenkel", name: "Oberschenkel", pair: true },
+    { id: "knie", name: "Knie", pair: true },
+    { id: "unterschenkel", name: "Unterschenkel / Wade", pair: true },
+    { id: "sprunggelenk", name: "Sprunggelenk", pair: true },
+    { id: "fuss", name: "Fuß / Zehen", pair: true },
+  ]},
+];
+// Flache Liste aller erfassbaren Stellen (Paare in _l / _r aufgeteilt)
+const SLOTS = [];
+for (const g of GROUPS) for (const r of g.regions) {
+  if (r.pair) {
+    SLOTS.push({ id: r.id + "_l", name: r.name + " links" });
+    SLOTS.push({ id: r.id + "_r", name: r.name + " rechts" });
+  } else SLOTS.push({ id: r.id, name: r.name });
+}
+const SLOT_NAME = Object.fromEntries(SLOTS.map(s => [s.id, s.name]));
+const DEFAULT_TAGS = ["Schmerzmittel", "Sport", "Physio", "Stress", "Schlecht geschlafen", "Wetterumschwung", "Viel gesessen", "Periode"];
+
+/* ------------------------------------------------------------------ *
+ * Speicher: localStorage (bleibt auf dem Gerät).
+ * ------------------------------------------------------------------ */
+const KEY = "schmerztagebuch.v1";
+let db = load();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && typeof d === "object" && d.days) return normalize(d);
+    }
+  } catch (e) { console.warn("Laden fehlgeschlagen", e); }
+  return normalize({});
+}
+function normalize(d) {
+  return {
+    version: 1,
+    days: d.days && typeof d.days === "object" ? d.days : {},
+    tags: Array.isArray(d.tags) ? d.tags : DEFAULT_TAGS.slice(),
+    lastExport: d.lastExport || null,
+  };
+}
+let storageOk = true;
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(db)); storageOk = true; }
+  catch (e) { storageOk = false; toast("Speichern nicht möglich – bitte Sicherung exportieren!"); }
+}
+// Safari bitten, die Daten nicht automatisch zu löschen
+let persisted = null;
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().then(p => { persisted = p; renderStorageInfo(); }).catch(() => {});
+}
+// Offline-Fähigkeit, wenn über https geladen (z. B. GitHub Pages)
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+
+/* ------------------------------------------------------------------ *
+ * Datumshilfen (lokale Zeit, Schlüssel YYYY-MM-DD)
+ * ------------------------------------------------------------------ */
+const pad = n => String(n).padStart(2, "0");
+const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseKey = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const today = () => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); };
+const MONTHS = ["Jänner", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+const MONTHS_S = ["Jän", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+const DOW = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const DOW_L = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+const dowMon = d => (d.getDay() + 6) % 7; // 0 = Montag
+const mondayOf = d => addDays(d, -dowMon(d));
+function isoWeek(d) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  return Math.ceil(((t - y0) / 86400000 + 1) / 7);
+}
+const fmtDate = d => `${d.getDate()}. ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+const fmtShort = d => `${d.getDate()}.${d.getMonth() + 1}.`;
+const fmtNum = (v, dig = 1) => v == null || isNaN(v) ? "–" : v.toLocaleString("de-AT", { minimumFractionDigits: dig, maximumFractionDigits: dig });
+
+/* ------------------------------------------------------------------ *
+ * Kennzahlen eines Tages
+ * Ø = Durchschnitt der schmerzenden Stellen (Wert > 0), schmerzfrei = 0
+ * ------------------------------------------------------------------ */
+function dayStats(entry) {
+  if (!entry) return null;
+  const vals = Object.values(entry.p || {}).filter(v => v > 0);
+  if (!vals.length) return { avg: 0, max: 0, n: 0 };
+  return { avg: vals.reduce((a, b) => a + b, 0) / vals.length, max: Math.max(...vals), n: vals.length };
+}
+function hasContent(e) {
+  return e && (Object.values(e.p || {}).some(v => v > 0) || (e.note || "").trim() || (e.tags || []).length || e.touched);
+}
+function dayValue(entry, metric, region) {
+  if (!entry) return null;
+  if (region) return (entry.p && entry.p[region]) || 0;
+  return dayStats(entry)[metric];
+}
+
+/* ------------------------------------------------------------------ *
+ * Navigation
+ * ------------------------------------------------------------------ */
+let currentView = "cal";
+function show(view) {
+  currentView = view;
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-" + view));
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("active", b.dataset.view === view));
+  if (view === "cal") renderCal();
+  if (view === "day") renderDay();
+  if (view === "stats") renderStats();
+  if (view === "data") renderData();
+  window.scrollTo(0, 0);
+}
+document.getElementById("tabs").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (b) show(b.dataset.view);
+});
+
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v;
+    else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (k === "style") n.style.cssText = v;
+    else n.setAttribute(k, v);
+  }
+  for (const c of kids) if (c != null) n.append(c);
+  return n;
+};
+const painVar = v => v > 0 ? `var(--p${Math.min(10, Math.round(v))})` : "var(--p0)";
+const painInk = v => {
+  const dark = document.documentElement.dataset.theme === "dark" ||
+    (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+  if (dark) return Math.round(v) >= 8 ? "#1a1a19" : "var(--text)";
+  return Math.round(v) >= 6 ? "#ffffff" : "var(--text)";
+};
+
+/* ------------------------------------------------------------------ *
+ * Kalender
+ * ------------------------------------------------------------------ */
+let calMonth = new Date(today().getFullYear(), today().getMonth(), 1);
+document.getElementById("cal-prev").onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); renderCal(); };
+document.getElementById("cal-next").onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); renderCal(); };
+{
+  const sw = document.getElementById("ramp-sw");
+  for (let i = 1; i <= 10; i++) sw.append(el("i", { style: `background: var(--p${i})` }));
+}
+
+function renderBackupBanner() {
+  const box = document.getElementById("backup-banner");
+  box.textContent = "";
+  const n = Object.keys(db.days).length;
+  if (!n) return;
+  const last = db.lastExport ? new Date(db.lastExport) : null;
+  const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+  if (last && days < 14) return;
+  box.append(el("div", { class: "banner" },
+    el("span", { text: last ? `Letzte Sicherung vor ${days} Tagen.` : "Noch keine Sicherung gespeichert." }),
+    el("button", { class: "btn", text: "Sichern", onclick: exportJson })));
+}
+
+function renderCal() {
+  renderBackupBanner();
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  document.getElementById("cal-title").textContent = `${MONTHS[m]} ${y}`;
+  const grid = document.getElementById("cal-grid");
+  grid.textContent = "";
+  for (const d of DOW) grid.append(el("div", { class: "cal-dow", text: d }));
+  const first = new Date(y, m, 1);
+  const lead = dowMon(first);
+  const daysIn = new Date(y, m + 1, 0).getDate();
+  const tk = keyOf(today());
+  for (let i = 0; i < lead; i++) grid.append(el("div", { class: "cal-day out" }));
+  const monthVals = [];
+  let painFree = 0, recorded = 0;
+  for (let d = 1; d <= daysIn; d++) {
+    const date = new Date(y, m, d), k = keyOf(date);
+    const e = db.days[k];
+    const st = hasContent(e) ? dayStats(e) : null;
+    const b = el("button", { class: "cal-day", "aria-label": fmtDate(date) });
+    if (k === tk) b.classList.add("today");
+    if (date > today()) b.classList.add("future");
+    b.append(el("span", { class: "d", text: d }));
+    if (st) {
+      recorded++;
+      if (st.max === 0) painFree++; else monthVals.push(st);
+      b.style.background = painVar(st.max);
+      b.style.color = painInk(st.max);
+      b.querySelector(".d").style.color = "inherit";
+      b.append(el("span", { class: "v", text: st.max === 0 ? "0" : st.max }));
+      b.setAttribute("aria-label", `${fmtDate(date)}: stärkster Schmerz ${st.max}`);
+      if ((e.note || "").trim()) b.append(el("i", { class: "note-dot" }));
+    }
+    b.onclick = () => { curDay = date; show("day"); };
+    grid.append(b);
+  }
+  const box = document.getElementById("month-stats");
+  box.textContent = "";
+  const allAvg = recorded ? [...monthVals.map(s => s.avg), ...Array(painFree).fill(0)] : [];
+  const mean = allAvg.length ? allAvg.reduce((a, b) => a + b, 0) / allAvg.length : null;
+  const maxMean = recorded ? (monthVals.reduce((a, s) => a + s.max, 0)) / recorded : null;
+  box.append(
+    tile("Ø Schmerz", fmtNum(mean), "im Monat"),
+    tile("Ø Max", fmtNum(maxMean), "Tageshöchstwert"),
+    tile("Erfasst", recorded, painFree ? `davon ${painFree} schmerzfrei` : "Tage"),
+  );
+}
+function tile(k, n, s, cls) {
+  return el("div", { class: "tile" }, el("div", { class: "k", text: k }), el("div", { class: "n" + (cls ? " " + cls : ""), text: n }), s ? el("div", { class: "s", text: s }) : null);
+}
+
+/* ------------------------------------------------------------------ *
+ * Tageseintrag
+ * ------------------------------------------------------------------ */
+let curDay = today();
+const openGroups = new Set([0]);
+document.getElementById("day-prev").onclick = () => { curDay = addDays(curDay, -1); renderDay(); };
+document.getElementById("day-next").onclick = () => { curDay = addDays(curDay, 1); renderDay(); };
+document.getElementById("day-today").onclick = () => { curDay = today(); renderDay(); };
+
+function getEntry(create) {
+  const k = keyOf(curDay);
+  if (!db.days[k] && create) db.days[k] = { p: {}, note: "", tags: [] };
+  return db.days[k];
+}
+function cleanupDay() {
+  const k = keyOf(curDay), e = db.days[k];
+  if (!e) return;
+  for (const [s, v] of Object.entries(e.p)) if (!v) delete e.p[s];
+  if (!hasContent(e)) delete db.days[k];
+}
+let hintTimer;
+function changed() {
+  cleanupDay();
+  save();
+  renderSummary();
+  const h = document.getElementById("saved-hint");
+  h.textContent = storageOk ? "Gespeichert ✓" : "Nicht gespeichert!";
+  clearTimeout(hintTimer); hintTimer = setTimeout(() => (h.textContent = ""), 1500);
+}
+function renderSummary() {
+  const e = db.days[keyOf(curDay)];
+  const box = document.getElementById("day-summary");
+  box.textContent = "";
+  if (!e) { box.append(el("span", { text: "Noch nichts eingetragen" })); return; }
+  const st = dayStats(e);
+  if (!st.n) { box.append(el("span", { text: "Schmerzfrei" })); return; }
+  box.append(
+    el("span", {}, "Ø ", el("b", { text: fmtNum(st.avg) })),
+    el("span", {}, "Max ", el("b", { text: st.max })),
+    el("span", {}, el("b", { text: st.n }), st.n === 1 ? " Stelle" : " Stellen"),
+  );
+  // Zähler in den Gruppenköpfen aktualisieren
+  document.querySelectorAll("details.group").forEach((d, gi) => {
+    d.querySelector(".cnt").textContent = groupCount(gi, e);
+  });
+}
+function groupCount(gi, e) {
+  let n = 0, mx = 0;
+  for (const r of GROUPS[gi].regions) for (const id of r.pair ? [r.id + "_l", r.id + "_r"] : [r.id]) {
+    const v = (e && e.p[id]) || 0; if (v > 0) { n++; mx = Math.max(mx, v); }
+  }
+  return n ? `${n} · max ${mx}` : "";
+}
+function sliderSlot(id, side) {
+  const e = db.days[keyOf(curDay)];
+  const v = (e && e.p[id]) || 0;
+  const input = el("input", { type: "range", min: 0, max: 10, step: 1, value: v, "aria-label": SLOT_NAME[id] });
+  const val = el("span", { class: "val" });
+  const paint = n => {
+    input.style.setProperty("--fill", (n * 10) + "%");
+    input.style.setProperty("--c", painVar(n));
+    val.textContent = n; val.classList.toggle("zero", !n);
+  };
+  paint(v);
+  input.addEventListener("input", () => {
+    const n = +input.value; paint(n);
+    const en = getEntry(true);
+    if (n) en.p[id] = n; else delete en.p[id];
+    en.touched = true;
+    changed();
+  });
+  return el("div", { class: "slot" }, el("span", { class: "side", text: side || "" }), input, val);
+}
+function renderDay() {
+  const t = today();
+  const diff = Math.round((curDay - t) / 86400000);
+  document.getElementById("day-title").textContent = fmtDate(curDay);
+  document.getElementById("day-subtitle").textContent =
+    DOW_L[curDay.getDay()] + (diff === 0 ? " · heute" : diff === -1 ? " · gestern" : diff === 1 ? " · morgen" : "");
+  const e = db.days[keyOf(curDay)];
+  const wrap = document.getElementById("regions");
+  wrap.textContent = "";
+  GROUPS.forEach((g, gi) => {
+    const det = el("details", { class: "group" });
+    // Gruppen mit Werten automatisch aufklappen
+    if (openGroups.has(gi) || groupCount(gi, e)) det.open = true;
+    det.addEventListener("toggle", () => det.open ? openGroups.add(gi) : openGroups.delete(gi));
+    det.append(el("summary", {},
+      el("span", { text: g.name }),
+      el("span", { class: "cnt", text: groupCount(gi, e) }),
+      chev()));
+    for (const r of g.regions) {
+      const row = el("div", { class: "region" }, el("div", { class: "name", text: r.name }));
+      if (r.pair) row.append(el("div", { class: "pair" }, sliderSlot(r.id + "_l", "L"), sliderSlot(r.id + "_r", "R")));
+      else row.append(sliderSlot(r.id));
+      det.append(row);
+    }
+    wrap.append(det);
+  });
+  renderDayTags();
+  document.getElementById("day-note").value = (e && e.note) || "";
+  renderSummary();
+}
+function chev() {
+  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("class", "chev");
+  s.innerHTML = '<path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
+  return s;
+}
+function renderDayTags() {
+  const e = db.days[keyOf(curDay)];
+  const on = new Set((e && e.tags) || []);
+  const box = document.getElementById("day-tags");
+  box.textContent = "";
+  const all = [...db.tags, ...[...on].filter(t => !db.tags.includes(t))];
+  for (const t of all) {
+    box.append(el("button", { class: "chip", "aria-pressed": on.has(t) ? "true" : "false", text: t, onclick: () => {
+      const en = getEntry(true);
+      en.tags = en.tags || [];
+      if (en.tags.includes(t)) en.tags = en.tags.filter(x => x !== t); else en.tags.push(t);
+      changed(); renderDayTags();
+    }}));
+  }
+}
+document.getElementById("tag-add").onclick = () => {
+  const t = (prompt("Neue Markierung (z. B. „Migräne-Tablette“, „Yoga“):") || "").trim();
+  if (!t) return;
+  if (!db.tags.includes(t)) db.tags.push(t);
+  const en = getEntry(true);
+  en.tags = en.tags || [];
+  if (!en.tags.includes(t)) en.tags.push(t);
+  changed(); renderDayTags();
+};
+let noteTimer;
+document.getElementById("day-note").addEventListener("input", ev => {
+  const en = getEntry(true);
+  en.note = ev.target.value;
+  clearTimeout(noteTimer); noteTimer = setTimeout(changed, 400);
+});
+document.getElementById("day-note").addEventListener("blur", () => { clearTimeout(noteTimer); if (db.days[keyOf(curDay)]) changed(); });
+document.getElementById("day-copy").onclick = () => {
+  // nimmt den letzten Tag mit Einträgen vor dem aktuellen
+  let src = null;
+  for (let i = 1; i <= 60 && !src; i++) {
+    const e = db.days[keyOf(addDays(curDay, -i))];
+    if (e && Object.keys(e.p || {}).length) src = e;
+  }
+  if (!src) { toast("Kein früherer Eintrag mit Werten gefunden"); return; }
+  const en = getEntry(true);
+  if (Object.keys(en.p).length && !confirm("Die Werte dieses Tages durch die des letzten Eintrags ersetzen?")) return;
+  en.p = { ...src.p };
+  changed(); renderDay(); toast("Werte übernommen – jetzt anpassen");
+};
+document.getElementById("day-free").onclick = () => {
+  const en = getEntry(true);
+  if (Object.keys(en.p).length && !confirm("Alle Schmerzwerte dieses Tages auf 0 setzen?")) return;
+  en.p = {}; en.touched = true;
+  changed(); renderDay(); toast("Als schmerzfreier Tag eingetragen");
+};
+document.getElementById("day-clear").onclick = () => {
+  const k = keyOf(curDay);
+  if (!db.days[k]) { toast("Für diesen Tag gibt es keinen Eintrag"); return; }
+  if (!confirm(`Eintrag vom ${fmtDate(curDay)} löschen?`)) return;
+  delete db.days[k]; save(); renderDay(); toast("Eintrag gelöscht");
+};
+
+/* ------------------------------------------------------------------ *
+ * Auswertung
+ * ------------------------------------------------------------------ */
+const F = { range: "30", group: "day", metric: "avg", region: "" };
+try { Object.assign(F, JSON.parse(localStorage.getItem(KEY + ".filters") || "{}")); } catch (e) {}
+function setSeg(id, key) {
+  const box = document.getElementById(id);
+  const sync = () => box.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === F[key] ? "true" : "false"));
+  box.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    F[key] = b.dataset.v;
+    if (key === "range") F.group = ({ "7": "day", "30": "day", "90": "week", "182": "week", "365": "month", "all": "month" })[F.range];
+    syncAll(); persistFilters(); renderStats();
+  });
+  return sync;
+}
+const syncers = [setSeg("f-range", "range"), setSeg("f-group", "group"), setSeg("f-metric", "metric")];
+const syncAll = () => syncers.forEach(s => s());
+function persistFilters() { try { localStorage.setItem(KEY + ".filters", JSON.stringify(F)); } catch (e) {} }
+{
+  const sel = document.getElementById("f-region");
+  sel.append(el("option", { value: "", text: "— keine —" }));
+  for (const g of GROUPS) {
+    const og = el("optgroup", { label: g.name });
+    for (const r of g.regions) {
+      if (r.pair) { og.append(el("option", { value: r.id + "_l", text: r.name + " links" }), el("option", { value: r.id + "_r", text: r.name + " rechts" })); }
+      else og.append(el("option", { value: r.id, text: r.name }));
+    }
+    sel.append(og);
+  }
+  sel.value = F.region;
+  sel.onchange = () => { F.region = sel.value; persistFilters(); renderStats(); };
+}
+
+function rangeBounds() {
+  const end = today();
+  let start;
+  if (F.range === "all") {
+    const keys = Object.keys(db.days).sort();
+    start = keys.length ? parseKey(keys[0]) : addDays(end, -29);
+    if (start > end) start = end;
+  } else start = addDays(end, -(+F.range) + 1);
+  return { start, end };
+}
+function daysIn(start, end) {
+  const out = [];
+  for (let d = start; d <= end; d = addDays(d, 1)) {
+    const e = db.days[keyOf(d)];
+    out.push({ date: d, e: hasContent(e) ? e : null });
+  }
+  return out;
+}
+function bucketKey(d, group) {
+  if (group === "week") return keyOf(mondayOf(d));
+  if (group === "month") return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+  return keyOf(d);
+}
+function bucketLabel(k, group, long) {
+  if (group === "month") { const [y, m] = k.split("-").map(Number); return long ? `${MONTHS[m - 1]} ${y}` : `${MONTHS_S[m - 1]}${String(y).slice(2) !== String(today().getFullYear()).slice(2) ? " " + String(y).slice(2) : ""}`; }
+  const d = parseKey(k);
+  if (group === "week") return long ? `KW ${isoWeek(d)} (${fmtShort(d)}–${fmtShort(addDays(d, 6))})` : fmtShort(d);
+  return long ? `${DOW[dowMon(d)]}, ${fmtDate(d)}` : fmtShort(d);
+}
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+
+function periodSummary(days) {
+  const rec = days.filter(x => x.e);
+  const st = rec.map(x => dayStats(x.e));
+  return {
+    recorded: rec.length,
+    total: days.length,
+    avg: mean(st.map(s => s.avg)),
+    maxAvg: mean(st.map(s => s.max)),
+    peak: st.length ? Math.max(...st.map(s => s.max)) : null,
+    painFree: st.filter(s => s.max === 0).length,
+    region: F.region ? mean(rec.map(x => x.e.p[F.region] || 0)) : null,
+  };
+}
+
+function renderStats() {
+  syncAll();
+  document.getElementById("f-region").value = F.region;
+  const { start, end } = rangeBounds();
+  const days = daysIn(start, end);
+  const len = days.length;
+  const prevDays = daysIn(addDays(start, -len), addDays(start, -1));
+  const cur = periodSummary(days), prev = periodSummary(prevDays);
+  const metricKey = F.metric === "avg" ? "avg" : "maxAvg";
+  const metricName = F.metric === "avg" ? "Ø Schmerz" : "Ø Tagesmaximum";
+
+  // Kennzahlen
+  const tiles = document.getElementById("tiles");
+  tiles.textContent = "";
+  let deltaTxt = "kein Vergleich möglich", deltaCls = "";
+  if (cur[metricKey] != null && prev[metricKey] != null) {
+    const d = cur[metricKey] - prev[metricKey];
+    deltaTxt = (Math.abs(d) < 0.05 ? "± 0,0" : (d > 0 ? "▲ +" : "▼ ") + fmtNum(d)) + " vs. davor";
+    deltaCls = d > 0.05 ? "delta-up" : d < -0.05 ? "delta-down" : "";
+  }
+  const t1 = tile(metricName, fmtNum(cur[metricKey]), deltaTxt);
+  if (deltaCls) t1.querySelector(".s").className = "s " + deltaCls;
+  tiles.append(
+    t1,
+    tile("Spitzenwert", cur.peak == null ? "–" : cur.peak, "höchster Wert im Zeitraum"),
+    tile("Schmerzfreie Tage", cur.painFree, cur.recorded ? `von ${cur.recorded} erfassten` : "keine Einträge"),
+    tile("Erfasst", `${cur.recorded}/${cur.total}`, "Tage im Zeitraum"),
+  );
+
+  // Verlauf
+  const buckets = new Map();
+  for (const x of days) {
+    const k = bucketKey(x.date, F.group);
+    if (!buckets.has(k)) buckets.set(k, { k, all: [], reg: [] });
+    if (x.e) {
+      buckets.get(k).all.push(dayValue(x.e, F.metric));
+      if (F.region) buckets.get(k).reg.push(dayValue(x.e, F.metric, F.region));
+    }
+  }
+  const pts = [...buckets.values()].map(b => ({ k: b.k, label: bucketLabel(b.k, F.group), long: bucketLabel(b.k, F.group, true), n: b.all.length, a: mean(b.all), r: F.region ? mean(b.reg) : null }));
+  const groupWord = { day: "Tag", week: "Woche", month: "Monat" }[F.group];
+  document.getElementById("trend-title").textContent = `Verlauf je ${groupWord}`;
+  document.getElementById("trend-sub").textContent = F.group === "day"
+    ? (F.metric === "avg" ? "Ø der schmerzenden Stellen pro Tag (schmerzfreier Tag = 0)." : "Stärkster Schmerz pro Tag.")
+    : (F.metric === "avg" ? `Mittelwert der Tages-Ø je ${groupWord}.` : `Mittelwert der Tagesmaxima je ${groupWord}.`);
+  const series = [{ key: "a", name: F.metric === "avg" ? "Gesamt (Ø)" : "Gesamt (Max)", color: "var(--series-1)" }];
+  if (F.region) series.push({ key: "r", name: SLOT_NAME[F.region], color: "var(--series-2)" });
+  const leg = document.getElementById("trend-legend");
+  leg.textContent = "";
+  if (series.length > 1) for (const s of series) leg.append(el("span", {}, el("i", { style: `background:${s.color}` }), s.name));
+  lineChart(document.getElementById("trend-chart"), pts, series);
+  trendTable(pts, series);
+
+  regionBars(days);
+  periodCompare(cur, prev, start, end, len);
+  tagCompare(days);
+  weekdayBars(days);
+}
+
+/* --- Liniendiagramm (SVG, eigene Umsetzung, funktioniert offline) --- */
+function lineChart(host, pts, series) {
+  host.textContent = "";
+  if (!pts.some(p => p.n)) { host.append(el("div", { class: "empty", text: "Im gewählten Zeitraum gibt es noch keine Einträge." })); return; }
+  const W = Math.max(300, host.clientWidth || 340), H = 220;
+  const m = { l: 26, r: 8, t: 10, b: 24 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const n = pts.length;
+  const x = i => m.l + (n === 1 ? iw / 2 : (i / (n - 1)) * iw);
+  const y = v => m.t + ih - (v / 10) * ih;
+  const NS = "http://www.w3.org/2000/svg";
+  const s = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Schmerzverlauf" });
+  // Raster
+  for (const v of [0, 2, 4, 6, 8, 10]) {
+    svg.append(s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: v === 0 ? "var(--line)" : "var(--grid)", "stroke-width": 1 }));
+    const t = s("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }); t.textContent = v; svg.append(t);
+  }
+  // X-Beschriftung: höchstens ~6 Labels
+  const step = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(iw / 58))));
+  for (let i = 0; i < n; i += step) {
+    const t = s("text", { x: x(i), y: H - 6, "text-anchor": n === 1 ? "middle" : i === 0 ? "start" : "middle" }); t.textContent = pts[i].label; svg.append(t);
+  }
+  // Linien (Lücken bei Tagen ohne Eintrag)
+  for (const se of series) {
+    let d = "", pen = false;
+    pts.forEach((p, i) => {
+      const v = p[se.key];
+      if (v == null) { pen = false; return; }
+      d += (pen ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1); pen = true;
+    });
+    svg.append(s("path", { d, fill: "none", stroke: se.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+    // Punkte: bei wenigen Punkten alle, sonst nur isolierte (sonst unsichtbar)
+    pts.forEach((p, i) => {
+      const v = p[se.key]; if (v == null) return;
+      const isolated = (i === 0 || pts[i - 1][se.key] == null) && (i === n - 1 || pts[i + 1][se.key] == null);
+      if (n <= 40 || isolated) svg.append(s("circle", { cx: x(i), cy: y(v), r: 4, fill: se.color, stroke: "var(--surface)", "stroke-width": 2 }));
+    });
+  }
+  // Fadenkreuz + Tooltip
+  const cross = s("line", { y1: m.t, y2: m.t + ih, stroke: "var(--text-3)", "stroke-width": 1, visibility: "hidden" });
+  svg.append(cross);
+  const hit = s("rect", { x: m.l, y: 0, width: iw, height: H, fill: "transparent" });
+  svg.append(hit);
+  host.append(svg);
+  const tip = el("div", { class: "tooltip" });
+  host.append(tip);
+  const move = ev => {
+    const r = svg.getBoundingClientRect();
+    const px = (ev.clientX - r.left) * (W / r.width);
+    const i = n === 1 ? 0 : Math.max(0, Math.min(n - 1, Math.round(((px - m.l) / iw) * (n - 1))));
+    const p = pts[i];
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+    tip.textContent = "";
+    tip.append(el("div", { class: "t", text: p.long }));
+    if (!p.n) tip.append(el("div", { class: "r" }, el("span", { text: "kein Eintrag" })));
+    else for (const se of series) tip.append(el("div", { class: "r" }, el("i", { style: `background:${se.color}` }), el("b", { text: fmtNum(p[se.key]) }), el("span", { text: se.name })));
+    if (p.n && F.group !== "day") tip.append(el("div", { class: "r" }, el("span", { text: `${p.n} erfasste Tage` })));
+    tip.style.display = "block";
+    const cx = x(i) * (r.width / W);
+    const tw = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(r.width - tw, cx - tw / 2)) + "px";
+    tip.style.top = "-6px";
+    tip.style.transform = "translateY(-100%)";
+  };
+  const hide = () => { cross.setAttribute("visibility", "hidden"); tip.style.display = "none"; };
+  hit.addEventListener("pointermove", move);
+  hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", hide);
+  svg.addEventListener("pointercancel", hide);
+}
+let showTable = false;
+document.getElementById("trend-table-toggle").onclick = () => {
+  showTable = !showTable;
+  document.getElementById("trend-table").hidden = !showTable;
+  document.getElementById("trend-table-toggle").textContent = showTable ? "Tabelle ausblenden" : "Als Tabelle anzeigen";
+};
+function trendTable(pts, series) {
+  const box = document.getElementById("trend-table");
+  box.textContent = "";
+  const t = el("table", { class: "data" });
+  const hr = el("tr", {}, el("th", { text: "Zeitraum" }));
+  for (const s of series) hr.append(el("th", { class: "num", text: s.name }));
+  hr.append(el("th", { class: "num", text: "Tage" }));
+  t.append(hr);
+  for (const p of [...pts].reverse()) {
+    if (!p.n) continue;
+    const tr = el("tr", {}, el("td", { text: p.long }));
+    for (const s of series) tr.append(el("td", { class: "num", text: fmtNum(p[s.key]) }));
+    tr.append(el("td", { class: "num", text: p.n }));
+    t.append(tr);
+  }
+  box.append(t);
+}
+
+/* --- Balken je Körperstelle --- */
+function hbars(host, rows, max, fmt = r => fmtNum(r.v), sub = r => r.sub) {
+  host.textContent = "";
+  if (!rows.length) { host.append(el("div", { class: "empty", text: "Keine Daten im Zeitraum." })); return; }
+  for (const r of rows) {
+    const bar = el("div", { class: "bar", style: `width:${Math.max(0, (r.v / max) * 100)}%` + (r.color ? `;background:${r.color}` : "") });
+    host.append(el("div", { class: "bar-row", title: `${r.label}: ${fmt(r)}` },
+      el("span", { class: "lbl", text: r.label }),
+      el("div", { class: "track" }, bar),
+      el("span", { class: "num" }, fmt(r), sub(r) ? el("small", { text: sub(r) }) : null)));
+  }
+}
+function regionBars(days) {
+  const rec = days.filter(x => x.e);
+  const host = document.getElementById("region-bars");
+  if (!rec.length) { hbars(host, []); return; }
+  const rows = [];
+  for (const s of SLOTS) {
+    const vals = rec.map(x => x.e.p[s.id] || 0);
+    const hit = vals.filter(v => v > 0).length;
+    if (!hit) continue;
+    rows.push({ label: s.name, v: mean(vals), sub: `${hit} ${hit === 1 ? "Tag" : "Tage"}` });
+  }
+  rows.sort((a, b) => b.v - a.v);
+  if (!rows.length) { host.textContent = ""; host.append(el("div", { class: "empty", text: "Im Zeitraum keine Schmerzen eingetragen." })); return; }
+  hbars(host, rows, 10);
+}
+
+/* --- Zeitraum vs. Vorzeitraum --- */
+function periodCompare(cur, prev, start, end, len) {
+  const ps = addDays(start, -len), pe = addDays(start, -1);
+  document.getElementById("cmp-sub").textContent = `${fmtShort(start)}${start.getFullYear() !== end.getFullYear() ? start.getFullYear() : ""}–${fmtShort(end)}${end.getFullYear()} verglichen mit den ${len} Tagen davor (${fmtShort(ps)}${ps.getFullYear()}–${fmtShort(pe)}${pe.getFullYear()}).`;
+  const host = document.getElementById("period-cmp");
+  host.textContent = "";
+  host.append(el("div", { class: "cmp-row h" }, el("span", { text: "" }), el("span", { text: "Jetzt" }), el("span", { text: "Davor" }), el("span", { text: "Änderung" })));
+  const rows = [
+    ["Ø Schmerz", "avg"],
+    ["Ø Tagesmaximum", "maxAvg"],
+    ["Spitzenwert", "peak"],
+    ["Schmerzfreie Tage", "painFree", true],
+    ["Erfasste Tage", "recorded", true],
+  ];
+  if (F.region) rows.push([`Ø ${SLOT_NAME[F.region]}`, "region"]);
+  for (const [label, k, isCount] of rows) {
+    const a = cur[k], b = prev[k];
+    let dTxt = "–", cls = "";
+    const usable = isCount ? prev.recorded > 0 && cur.recorded > 0 : a != null && b != null;
+    if (usable) {
+      const d = a - b;
+      dTxt = d === 0 ? "±0" : (d > 0 ? "+" : "−") + (isCount ? Math.abs(d) : fmtNum(Math.abs(d)));
+      if (k !== "recorded" && Math.abs(d) >= (isCount ? 1 : 0.05)) {
+        const worse = k === "painFree" ? d < 0 : d > 0;
+        cls = worse ? "delta-up" : "delta-down";
+        dTxt = (worse ? "▲ " : "▼ ") + dTxt;
+      }
+    }
+    const f = v => v == null ? "–" : isCount || k === "peak" ? String(v) : fmtNum(v);
+    host.append(el("div", { class: "cmp-row" }, el("span", { text: label }), el("b", { text: f(a) }), el("span", { class: "muted", text: f(b) }), el("span", { class: cls, text: dTxt })));
+  }
+}
+
+/* --- Markierungen: mit / ohne --- */
+function tagCompare(days) {
+  const rec = days.filter(x => x.e);
+  const host = document.getElementById("tag-cmp");
+  host.textContent = "";
+  const tags = new Map();
+  for (const x of rec) for (const t of x.e.tags || []) tags.set(t, (tags.get(t) || 0) + 1);
+  if (!tags.size) { host.append(el("div", { class: "empty", text: "Im Zeitraum wurden keine Markierungen gesetzt." })); return; }
+  host.append(el("div", { class: "cmp-row h" }, el("span", { text: "Markierung" }), el("span", { text: "mit" }), el("span", { text: "ohne" }), el("span", { text: "Tage" })));
+  for (const [t, cnt] of [...tags].sort((a, b) => b[1] - a[1])) {
+    const w = mean(rec.filter(x => (x.e.tags || []).includes(t)).map(x => dayValue(x.e, F.metric)));
+    const wo = mean(rec.filter(x => !(x.e.tags || []).includes(t)).map(x => dayValue(x.e, F.metric)));
+    let cls = "";
+    if (w != null && wo != null && Math.abs(w - wo) >= 0.5) cls = w > wo ? "delta-up" : "delta-down";
+    host.append(el("div", { class: "cmp-row" }, el("span", { text: t }), el("b", { class: cls, text: fmtNum(w) }), el("span", { class: "muted", text: fmtNum(wo) }), el("span", { class: "muted", text: cnt })));
+  }
+  host.append(el("p", { class: "small", style: "margin:8px 0 0", text: `Kennzahl: ${F.metric === "avg" ? "Ø der schmerzenden Stellen" : "stärkster Schmerz"} pro Tag. Farbig, wenn der Unterschied mindestens 0,5 beträgt.` }));
+}
+
+/* --- Wochentage --- */
+function weekdayBars(days) {
+  const rec = days.filter(x => x.e);
+  const by = Array.from({ length: 7 }, () => []);
+  for (const x of rec) by[dowMon(x.date)].push(dayValue(x.e, F.metric));
+  const rows = by.map((a, i) => ({ label: ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"][i], v: mean(a) || 0, n: a.length, sub: a.length ? `${a.length}×` : "" })).filter(r => r.n);
+  hbars(document.getElementById("weekday-bars"), rows, 10);
+}
+
+/* ------------------------------------------------------------------ *
+ * Daten: Export / Import
+ * ------------------------------------------------------------------ */
+function renderStorageInfo() {
+  const n = Object.keys(db.days).length;
+  const keys = Object.keys(db.days).sort();
+  const info = document.getElementById("storage-info");
+  if (!info) return;
+  const standalone = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+  info.textContent =
+    `${n} ${n === 1 ? "Tag" : "Tage"} gespeichert` + (n ? ` (${fmtShort(parseKey(keys[0]))}${parseKey(keys[0]).getFullYear()} bis ${fmtShort(parseKey(keys[n - 1]))}${parseKey(keys[n - 1]).getFullYear()})` : "") + ". " +
+    "Alle Daten bleiben nur auf diesem Gerät im Browser-Speicher und werden bei jedem Start automatisch geladen. " +
+    (standalone ? "Die App läuft vom Home-Bildschirm – so löscht Safari die Daten nicht automatisch. " :
+      "Tipp: Über „Teilen → Zum Home-Bildschirm“ hinzufügen. Im normalen Safari-Tab kann iOS Daten nach längerer Nichtbenutzung löschen. ") +
+    (persisted === true ? "Dauerhafte Speicherung ist aktiv. " : "") +
+    (db.lastExport ? `Letzte Sicherung: ${fmtDate(new Date(db.lastExport))}.` : "Noch keine Sicherung exportiert.");
+}
+function renderData() {
+  renderStorageInfo();
+  const box = document.getElementById("tag-manage");
+  box.textContent = "";
+  for (const t of db.tags) box.append(el("button", { class: "chip", text: t + "  ×", onclick: () => {
+    if (!confirm(`„${t}“ aus der Auswahl entfernen?`)) return;
+    db.tags = db.tags.filter(x => x !== t); save(); renderData();
+  }}));
+  if (!db.tags.length) box.append(el("span", { class: "small", text: "Keine Markierungen." }));
+}
+async function shareOrDownload(name, text, mime) {
+  const blob = new Blob([text], { type: mime });
+  const file = new File([blob], name, { type: mime });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: name }); return true; }
+    catch (e) { if (e.name === "AbortError") return false; }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = el("a", { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  return true;
+}
+async function exportJson() {
+  const stamp = keyOf(today());
+  const out = { app: "schmerztagebuch", exported: new Date().toISOString(), ...db };
+  delete out.lastExport;
+  const ok = await shareOrDownload(`schmerztagebuch-${stamp}.json`, JSON.stringify(out, null, 1), "application/json");
+  if (ok) { db.lastExport = new Date().toISOString(); save(); renderBackupBanner(); if (currentView === "data") renderData(); toast("Sicherung erstellt"); }
+}
+document.getElementById("export-json").onclick = exportJson;
+document.getElementById("export-csv").onclick = () => {
+  const esc = v => { const s = String(v ?? ""); return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const head = ["Datum", "Wochentag", "Ø Schmerz", "Max", "Anzahl Stellen", ...SLOTS.map(s => s.name), "Markierungen", "Notiz"];
+  const lines = [head.map(esc).join(";")];
+  for (const k of Object.keys(db.days).sort()) {
+    const e = db.days[k], st = dayStats(e), d = parseKey(k);
+    lines.push([k, DOW_L[d.getDay()], fmtNum(st.avg), st.max, st.n, ...SLOTS.map(s => e.p[s.id] || ""), (e.tags || []).join(", "), e.note || ""].map(esc).join(";"));
+  }
+  shareOrDownload(`schmerztagebuch-${keyOf(today())}.csv`, "﻿" + lines.join("\r\n"), "text/csv");
+};
+let importMode = "merge";
+document.getElementById("import-merge").onclick = () => { importMode = "merge"; document.getElementById("import-file").click(); };
+document.getElementById("import-replace").onclick = () => { importMode = "replace"; document.getElementById("import-file").click(); };
+document.getElementById("import-file").addEventListener("change", async ev => {
+  const f = ev.target.files[0]; ev.target.value = "";
+  if (!f) return;
+  let data;
+  try { data = JSON.parse(await f.text()); } catch (e) { alert("Die Datei ist keine gültige Sicherung (.json)."); return; }
+  if (!data || typeof data.days !== "object") { alert("In der Datei wurden keine Tageseinträge gefunden."); return; }
+  const incoming = normalize(data);
+  // Grundlegende Prüfung der Einträge
+  const clean = {};
+  for (const [k, e] of Object.entries(incoming.days)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !e || typeof e !== "object") continue;
+    const p = {};
+    for (const [s, v] of Object.entries(e.p || {})) { const n = Math.round(+v); if (SLOT_NAME[s] && n > 0 && n <= 10) p[s] = n; }
+    clean[k] = { p, note: typeof e.note === "string" ? e.note : "", tags: Array.isArray(e.tags) ? e.tags.filter(t => typeof t === "string") : [] };
+    if (e.touched) clean[k].touched = true;
+  }
+  const n = Object.keys(clean).length;
+  if (importMode === "replace") {
+    if (!confirm(`Alle vorhandenen Einträge durch ${n} Tage aus der Datei ersetzen?`)) return;
+    db = { version: 1, days: clean, tags: incoming.tags, lastExport: db.lastExport };
+  } else {
+    let conflicts = 0;
+    for (const k of Object.keys(clean)) if (db.days[k]) conflicts++;
+    let overwrite = true;
+    if (conflicts) overwrite = confirm(`${conflicts} Tage gibt es sowohl hier als auch in der Datei.\n\nOK = Werte aus der Datei verwenden\nAbbrechen = vorhandene Werte behalten`);
+    for (const [k, e] of Object.entries(clean)) if (!db.days[k] || overwrite) db.days[k] = e;
+    for (const t of incoming.tags) if (!db.tags.includes(t)) db.tags.push(t);
+  }
+  save(); renderData(); toast(`${n} Tage geladen`);
+});
+document.getElementById("wipe").onclick = () => {
+  if (!confirm("Wirklich ALLE Einträge löschen? Das kann nicht rückgängig gemacht werden.")) return;
+  if (!confirm("Ganz sicher? Hast du eine Sicherung?")) return;
+  db = normalize({}); save(); renderData(); toast("Alle Daten gelöscht");
+};
+
+// Andere Tabs/Fenster: Änderungen übernehmen
+window.addEventListener("storage", e => { if (e.key === KEY) { db = load(); show(currentView); } });
+// Nach Rückkehr in die App: neu zeichnen (z. B. Datumswechsel über Nacht)
+let lastToday = keyOf(today());
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && keyOf(today()) !== lastToday) {
+    lastToday = keyOf(today()); curDay = today(); show(currentView);
+  }
+});
+let resizeTimer;
+window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => currentView === "stats" && renderStats(), 150); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => currentView === "cal" && renderCal());
+
+show("cal");
+</script>
+</body>
+</html>
