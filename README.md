@@ -4,12 +4,20 @@ Web-App fürs iPhone (läuft auch auf jedem anderen Gerät): Schmerz täglich pr
 mit Notizen und Schnell-Markierungen, und über Tage, Wochen und Monate auswerten.
 
 - **Kalender:** Monatsansicht, jeder Tag eingefärbt nach dem stärksten Schmerz. Tippen öffnet den Tag.
-- **Eintrag:** 31 Körperstellen von Kopf bis Fuß (Arme und Beine links/rechts getrennt), Schieberegler 0–10,
-  Markierungen (Schmerzmittel, Sport, Stress, … – eigene hinzufügbar) und ein freies Notizfeld.
-  „Wie letzter Eintrag“ übernimmt die Werte des vorigen Tages, „Schmerzfrei“ trägt einen Tag ohne Schmerz ein.
+- **Eintrag:**
+  - **Befinden:** Tagesverfassung, psychischer Zustand und Ruhe/Unruhe (0–10).
+  - **Schmerz & Beschwerden (0–10):** Kopfschmerzen, Migräne, Gesicht/Kiefer, Nacken, trockene Augen, trockener Mund,
+    Schulter und Hand/Finger (L/R), oberer und unterer Rücken, Magen- und Bauchschmerzen, Gesäß, Blähungen,
+    Hüfte, Oberschenkel, Knie, Unterschenkel/Wade und Fuß (L/R).
+  - **Stuhlgang:** Anzahl und Konsistenz nach Bristol-Skala (Typ 1–7).
+  - **Haut & Nägel:** Ausprägung 0–10 und ein Feld, wo/was.
+  - **Schlaf:** Qualität per Symbol-Regler, Dauer in Stunden. **Wetter:** Symbol-Regler.
+  - **Ernährung:** Frühstück, Mittag, Abend. **Notizen** und **Medikamente** als Textfelder, dazu Markierungen.
+  - „Wie letzter Eintrag“ übernimmt die Schmerzwerte des vorigen Tages, „Schmerzfrei“ trägt einen Tag ohne Schmerz ein.
 - **Auswertung:** Zeitraum (7 Tage bis alles), Gruppierung nach Tagen/Wochen/Monaten, Ø oder Maximum,
-  Verlaufsdiagramm (optional mit einer einzelnen Körperstelle zum Vergleich), Ranking der Körperstellen,
-  Vergleich mit dem vorherigen gleich langen Zeitraum, Schmerz an Tagen mit/ohne Markierung, Wochentage.
+  Schmerzverlauf (optional mit einer Körperstelle, Befinden, Schlaf oder Stuhl zum Vergleich), Befinden-Verlauf,
+  Ranking der Körperstellen, Vergleich mit dem vorherigen Zeitraum, Schmerz nach Markierungen, Wetter, Schlaf und
+  Wochentag. Beschwerden wie trockene Augen oder Blähungen zählen nicht in den Schmerz-Durchschnitt.
 - **Sicherung:** Export als `.json` (zum Wiederherstellen) und `.csv` (Excel/Numbers), Import mit Zusammenführen
   oder Ersetzen.
 

@@ -28,6 +28,7 @@
   --accent-ink: #ffffff;
   --series-1: #2a78d6;
   --series-2: #eb6834;
+  --series-3: #1baf7a;
   --good: #0ca30c;
   --critical: #d03b3b;
   --good-text: #006300;
@@ -53,6 +54,7 @@
     --accent-ink: #1a1a19;
     --series-1: #3987e5;
     --series-2: #d95926;
+    --series-3: #199e70;
     --good-text: #4cc94c;
     --critical-text: #f07a7a;
     --shadow: none;
@@ -65,7 +67,7 @@
   color-scheme: dark;
   --bg: #161615; --surface: #1f1f1e; --surface-2: #2a2a28; --line: #383835; --grid: #2e2e2c;
   --text: #f0efec; --text-2: #c3c2b7; --text-3: #8f8e86; --accent: #e0703f; --accent-ink: #1a1a19;
-  --series-1: #3987e5; --series-2: #d95926; --good-text: #4cc94c; --critical-text: #f07a7a; --shadow: none;
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --good-text: #4cc94c; --critical-text: #f07a7a; --shadow: none;
   --p0: #2a2a28;
   --p1: #3b2a22; --p2: #4e3022; --p3: #653623; --p4: #7e3c22; --p5: #9a4422;
   --p6: #b84f26; --p7: #d2602f; --p8: #e57c4c; --p9: #f29c72; --p10: #ffc2a1;
@@ -211,6 +213,34 @@ textarea {
   background: var(--surface); padding: 10px; font-size: 16px;
 }
 .field-label { font-weight: 600; margin: 0 0 8px; display: block; }
+.mini-label { display: block; font-size: 14px; color: var(--text-2); margin: 10px 0 4px; }
+.card h2 + .sub { margin-top: 2px; }
+textarea.short { min-height: 0; }
+input.text {
+  width: 100%; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+  padding: 10px; font-size: 16px; margin-top: 6px;
+}
+.opt { padding: 6px 0 4px; }
+.opt + .opt { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 10px; }
+.opt-head { display: flex; align-items: baseline; gap: 8px; }
+.opt-head .lab { flex: 1; font-size: 15px; }
+.opt-head .v { font-weight: 700; font-variant-numeric: tabular-nums; }
+.opt-head .v.unset { color: var(--text-3); font-weight: 400; }
+.opt-head .reset { border: 0; background: var(--surface-2); color: var(--text-2); border-radius: 12px; width: 24px; height: 24px; font-size: 14px; line-height: 1; padding: 0; }
+.opt .ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-3); margin-top: -4px; }
+.opt.unset input[type=range]::-webkit-slider-thumb { opacity: .45; }
+.opt.unset input[type=range]::-moz-range-thumb { opacity: .45; }
+.sym { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.sym .e { font-size: 34px; line-height: 1; width: 44px; text-align: center; }
+.sym .t { font-size: 15px; }
+.sym .t.unset { color: var(--text-3); }
+.stool { padding: 8px 14px 12px; border-top: 1px solid var(--line); }
+.stepper { display: inline-flex; align-items: center; gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.stepper button { border: 0; background: var(--surface-2); width: 40px; height: 36px; font-size: 20px; }
+.stepper span { min-width: 40px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.bristol { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; margin-top: 8px; }
+.bristol .chip { border-radius: 10px; text-align: left; padding: 6px 8px; line-height: 1.2; }
+.bristol .chip small { display: block; font-size: 11px; opacity: .75; }
 .saved-hint { font-size: 13px; color: var(--text-3); text-align: center; min-height: 18px; margin: 6px 0; }
 
 /* Auswertung */
@@ -302,8 +332,34 @@ table.data td.num, table.data th.num { text-align: right; }
     <button class="btn" id="day-free">Schmerzfrei</button>
     <button class="btn" id="day-copy">Wie letzter Eintrag</button>
   </div>
+  <div class="card">
+    <h2>Befinden</h2>
+    <div id="mood"></div>
+  </div>
   <div id="regions"></div>
-
+  <div class="card">
+    <h2>Haut &amp; Nägel</h2>
+    <p class="sub">Veränderungen wie Ausschlag, Rötung, Juckreiz, Rillen oder Verfärbung.</p>
+    <div id="skin"></div>
+    <input type="text" class="text" id="skin-note" placeholder="Wo / was? z. B. Handrücken links, rote Flecken">
+  </div>
+  <div class="card">
+    <h2>Schlaf</h2>
+    <div id="sleep"></div>
+  </div>
+  <div class="card">
+    <h2>Wetter</h2>
+    <div id="weather"></div>
+  </div>
+  <div class="card">
+    <h2>Ernährung</h2>
+    <label class="mini-label" for="food-f">Frühstück</label>
+    <textarea class="short" id="food-f" data-food="f" rows="2"></textarea>
+    <label class="mini-label" for="food-m">Mittagessen</label>
+    <textarea class="short" id="food-m" data-food="m" rows="2"></textarea>
+    <label class="mini-label" for="food-a">Abendessen</label>
+    <textarea class="short" id="food-a" data-food="a" rows="2"></textarea>
+  </div>
   <div class="card">
     <span class="field-label">Schnell-Markierungen</span>
     <div class="chips" id="day-tags"></div>
@@ -313,7 +369,9 @@ table.data td.num, table.data th.num { text-align: right; }
   </div>
   <div class="card">
     <label class="field-label" for="day-note">Notizen</label>
-    <textarea id="day-note" placeholder="z. B. 400 mg Ibuprofen um 8 Uhr, 30 min Laufen, viel Stress in der Arbeit, schlecht geschlafen …"></textarea>
+    <textarea id="day-note" placeholder="z. B. 30 min Laufen, viel Stress in der Arbeit …"></textarea>
+    <label class="field-label" for="day-med" style="margin-top:14px">Medikamente</label>
+    <textarea class="short" id="day-med" rows="3" placeholder="z. B. 8:00 Ibuprofen 400 mg, 20:00 Magnesium"></textarea>
   </div>
   <div class="saved-hint" id="saved-hint"></div>
   <div class="row" style="justify-content:center; margin-bottom: 24px">
@@ -337,7 +395,7 @@ table.data td.num, table.data th.num { text-align: right; }
       </div>
     </div>
     <div class="row">
-      <label for="f-region" class="small">Vergleichen mit Körperstelle:</label>
+      <label for="f-region" class="small">Vergleichen mit:</label>
       <select id="f-region"></select>
     </div>
   </div>
@@ -354,8 +412,15 @@ table.data td.num, table.data th.num { text-align: right; }
   </div>
 
   <div class="card">
-    <h2>Körperstellen</h2>
-    <p class="sub">Durchschnittlicher Schmerz je Stelle über alle erfassten Tage im Zeitraum (Tage ohne Wert zählen als 0). Darunter: an wie vielen Tagen die Stelle wehgetan hat.</p>
+    <h2>Befinden</h2>
+    <p class="sub" id="mood-sub"></p>
+    <div class="legend" id="mood-legend"></div>
+    <div class="chart-wrap" id="mood-chart"></div>
+  </div>
+
+  <div class="card">
+    <h2>Körperstellen &amp; Beschwerden</h2>
+    <p class="sub">Durchschnittlicher Wert je Stelle über alle Tage mit Schmerzeintrag im Zeitraum (ohne Wert = 0). Darunter: an wie vielen Tagen sie aufgetreten ist.</p>
     <div id="region-bars"></div>
   </div>
 
@@ -369,6 +434,12 @@ table.data td.num, table.data th.num { text-align: right; }
     <h2>Markierungen &amp; Schmerz</h2>
     <p class="sub">Durchschnittlicher Tagesschmerz an Tagen mit bzw. ohne Markierung. Zeigt Zusammenhänge, keine Ursachen.</p>
     <div id="tag-cmp"></div>
+  </div>
+
+  <div class="card">
+    <h2>Wetter, Schlaf &amp; Schmerz</h2>
+    <p class="sub" id="infl-sub"></p>
+    <div id="infl"></div>
   </div>
 
   <div class="card">
@@ -427,49 +498,72 @@ table.data td.num, table.data th.num { text-align: right; }
 "use strict";
 
 /* ------------------------------------------------------------------ *
- * Körperstellen (Kopf bis Fuß). pair = links/rechts getrennt erfasst.
+ * Körperstellen & Beschwerden (0–10). pair = links/rechts getrennt.
+ * symptom = Beschwerde, zählt nicht in den Schmerz-Durchschnitt.
  * ------------------------------------------------------------------ */
 const GROUPS = [
-  { name: "Kopf & Hals", regions: [
-    { id: "kopf", name: "Kopf" },
+  { name: "Kopf", regions: [
+    { id: "kopf", name: "Kopfschmerzen" },
+    { id: "migraene", name: "Migräne" },
     { id: "gesicht", name: "Gesicht / Kiefer" },
     { id: "nacken", name: "Nacken / Halswirbelsäule" },
+    { id: "augen", name: "Trockene Augen", symptom: true },
+    { id: "mund", name: "Trockener Mund", symptom: true },
   ]},
-  { name: "Schultern & Arme", regions: [
+  { name: "Schultern & Hände", regions: [
     { id: "schulter", name: "Schulter", pair: true },
-    { id: "oberarm", name: "Oberarm", pair: true },
-    { id: "ellbogen", name: "Ellbogen", pair: true },
-    { id: "unterarm", name: "Unterarm", pair: true },
-    { id: "handgelenk", name: "Handgelenk", pair: true },
     { id: "hand", name: "Hand / Finger", pair: true },
   ]},
-  { name: "Rumpf", regions: [
-    { id: "brust", name: "Brust / Rippen" },
-    { id: "bauch", name: "Bauch" },
+  { name: "Rumpf & Verdauung", stool: true, regions: [
     { id: "ruecken_o", name: "Oberer Rücken / Brustwirbelsäule" },
     { id: "ruecken_u", name: "Unterer Rücken / Lendenwirbelsäule" },
-    { id: "becken", name: "Becken / Leiste" },
-    { id: "gesaess", name: "Gesäß / Steißbein" },
+    { id: "magen", name: "Magenschmerzen" },
+    { id: "bauch", name: "Bauchschmerzen" },
+    { id: "gesaess", name: "Gesäß" },
+    { id: "blaehungen", name: "Blähungen", symptom: true },
   ]},
   { name: "Hüfte & Beine", regions: [
     { id: "huefte", name: "Hüfte", pair: true },
     { id: "oberschenkel", name: "Oberschenkel", pair: true },
     { id: "knie", name: "Knie", pair: true },
     { id: "unterschenkel", name: "Unterschenkel / Wade", pair: true },
-    { id: "sprunggelenk", name: "Sprunggelenk", pair: true },
-    { id: "fuss", name: "Fuß / Zehen", pair: true },
+    { id: "fuss", name: "Fuß", pair: true },
   ]},
 ];
-// Flache Liste aller erfassbaren Stellen (Paare in _l / _r aufgeteilt)
+// Flache Liste aller 0–10-Werte (Paare in _l / _r aufgeteilt)
 const SLOTS = [];
 for (const g of GROUPS) for (const r of g.regions) {
   if (r.pair) {
     SLOTS.push({ id: r.id + "_l", name: r.name + " links" });
     SLOTS.push({ id: r.id + "_r", name: r.name + " rechts" });
-  } else SLOTS.push({ id: r.id, name: r.name });
+  } else SLOTS.push({ id: r.id, name: r.name, symptom: r.symptom });
 }
+SLOTS.push({ id: "haut", name: "Haut / Nägel", symptom: true });
+// Früher erfasste Stellen: bleiben in Auswertung und Export erhalten
+const LEGACY = {
+  brust: "Brust / Rippen", becken: "Becken / Leiste",
+  oberarm_l: "Oberarm links", oberarm_r: "Oberarm rechts", ellbogen_l: "Ellbogen links", ellbogen_r: "Ellbogen rechts",
+  unterarm_l: "Unterarm links", unterarm_r: "Unterarm rechts", handgelenk_l: "Handgelenk links", handgelenk_r: "Handgelenk rechts",
+  sprunggelenk_l: "Sprunggelenk links", sprunggelenk_r: "Sprunggelenk rechts",
+};
+for (const [id, name] of Object.entries(LEGACY)) SLOTS.push({ id, name, legacy: true });
 const SLOT_NAME = Object.fromEntries(SLOTS.map(s => [s.id, s.name]));
-const DEFAULT_TAGS = ["Schmerzmittel", "Sport", "Physio", "Stress", "Schlecht geschlafen", "Wetterumschwung", "Viel gesessen", "Periode"];
+const SYMPTOM = new Set(SLOTS.filter(s => s.symptom).map(s => s.id));
+const isPain = id => SLOT_NAME[id] && !SYMPTOM.has(id);
+
+// Befinden (0–10, „nicht erfasst“ möglich)
+const MOOD = [
+  { id: "verfassung", name: "Tagesverfassung", lo: "sehr schlecht", hi: "sehr gut" },
+  { id: "psyche", name: "Psychischer Zustand", lo: "sehr schlecht", hi: "sehr gut" },
+  { id: "unruhe", name: "Ruhe / Unruhe", lo: "ganz ruhig", hi: "sehr unruhig" },
+];
+const WEATHER = [
+  ["☀️", "Sonnig"], ["🌤️", "Heiter"], ["⛅", "Wolkig"], ["☁️", "Bedeckt"], ["🌫️", "Nebel"],
+  ["🌦️", "Regenschauer"], ["🌧️", "Regen"], ["⛈️", "Gewitter"], ["🌨️", "Schnee"],
+];
+const SLEEP = [["😫", "Sehr schlecht"], ["😟", "Schlecht"], ["😐", "Mittel"], ["🙂", "Gut"], ["😴", "Sehr gut"]];
+const BRISTOL = ["Harte Kügelchen", "Hart, klumpig", "Wurst mit Rissen", "Glatt & weich", "Weiche Stücke", "Breiig", "Flüssig"];
+const DEFAULT_TAGS = ["Schmerzmittel", "Sport", "Physio", "Stress", "Wetterumschwung", "Viel gesessen", "Periode"];
 
 /* ------------------------------------------------------------------ *
  * Speicher: localStorage (bleibt auf dem Gerät).
@@ -489,7 +583,7 @@ function load() {
 }
 function normalize(d) {
   return {
-    version: 1,
+    version: 2,
     days: d.days && typeof d.days === "object" ? d.days : {},
     tags: Array.isArray(d.tags) ? d.tags : DEFAULT_TAGS.slice(),
     lastExport: d.lastExport || null,
@@ -534,25 +628,41 @@ function isoWeek(d) {
 const fmtDate = d => `${d.getDate()}. ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 const fmtShort = d => `${d.getDate()}.${d.getMonth() + 1}.`;
 const fmtNum = (v, dig = 1) => v == null || isNaN(v) ? "–" : v.toLocaleString("de-AT", { minimumFractionDigits: dig, maximumFractionDigits: dig });
+const fmtHours = h => h == null ? "–" : `${fmtNum(h, h % 1 ? 1 : 0)} h`;
 
 /* ------------------------------------------------------------------ *
  * Kennzahlen eines Tages
- * Ø = Durchschnitt der schmerzenden Stellen (Wert > 0), schmerzfrei = 0
+ * Ø = Durchschnitt der schmerzenden Stellen (Wert > 0), schmerzfrei = 0.
+ * Beschwerden (trockene Augen, Blähungen, Haut …) zählen nicht dazu.
  * ------------------------------------------------------------------ */
 function dayStats(entry) {
   if (!entry) return null;
-  const vals = Object.values(entry.p || {}).filter(v => v > 0);
+  const vals = Object.entries(entry.p || {}).filter(([id, v]) => v > 0 && isPain(id)).map(([, v]) => v);
   if (!vals.length) return { avg: 0, max: 0, n: 0 };
   return { avg: vals.reduce((a, b) => a + b, 0) / vals.length, max: Math.max(...vals), n: vals.length };
 }
+const filled = o => o && Object.values(o).some(v => v != null && v !== "");
+// Irgendetwas eingetragen (für Speicher und Kalender)
 function hasContent(e) {
-  return e && (Object.values(e.p || {}).some(v => v > 0) || (e.note || "").trim() || (e.tags || []).length || e.touched);
+  return !!e && (Object.values(e.p || {}).some(v => v > 0) || (e.note || "").trim() || (e.med || "").trim() ||
+    (e.skin || "").trim() || (e.tags || []).length || e.touched || filled(e.s) || e.w || filled(e.sl) || filled(e.st) || filled(e.food));
 }
-function dayValue(entry, metric, region) {
-  if (!entry) return null;
-  if (region) return (entry.p && entry.p[region]) || 0;
-  return dayStats(entry)[metric];
+// Schmerz erfasst (für Schmerz-Statistik): ein Wert > 0 oder ein Regler bewegt / „schmerzfrei“
+function painRecorded(e) {
+  return !!e && (e.touched || Object.values(e.p || {}).some(v => v > 0));
 }
+function dayValue(entry, metric) { return dayStats(entry)[metric]; }
+
+// Alles, was sich im Verlauf vergleichen lässt
+const SERIES_DEFS = [
+  ...MOOD.map(m => ({ id: "s:" + m.id, name: m.name, get: e => e.s?.[m.id] ?? null })),
+  { id: "sl:q", name: "Schlafqualität (1–5)", get: e => e.sl?.q ?? null },
+  { id: "sl:h", name: "Schlafdauer (Stunden)", get: e => e.sl?.h ?? null },
+  { id: "st:n", name: "Stuhlgänge (Anzahl)", get: e => e.st?.n ?? null },
+  { id: "st:b", name: "Stuhl-Konsistenz (Bristol 1–7)", get: e => e.st?.b ?? null },
+];
+const SERIES = Object.fromEntries(SERIES_DEFS.map(s => [s.id, s]));
+for (const s of SLOTS) SERIES[s.id] = { id: s.id, name: s.name, get: e => painRecorded(e) ? (e.p?.[s.id] || 0) : null };
 
 /* ------------------------------------------------------------------ *
  * Navigation
@@ -591,12 +701,9 @@ const el = (tag, attrs = {}, ...kids) => {
   return n;
 };
 const painVar = v => v > 0 ? `var(--p${Math.min(10, Math.round(v))})` : "var(--p0)";
-const painInk = v => {
-  const dark = document.documentElement.dataset.theme === "dark" ||
-    (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
-  if (dark) return Math.round(v) >= 8 ? "#1a1a19" : "var(--text)";
-  return Math.round(v) >= 6 ? "#ffffff" : "var(--text)";
-};
+const isDark = () => document.documentElement.dataset.theme === "dark" ||
+  (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+const painInk = v => isDark() ? (Math.round(v) >= 8 ? "#1a1a19" : "var(--text)") : (Math.round(v) >= 6 ? "#ffffff" : "var(--text)");
 
 /* ------------------------------------------------------------------ *
  * Kalender
@@ -634,38 +741,34 @@ function renderCal() {
   const daysIn = new Date(y, m + 1, 0).getDate();
   const tk = keyOf(today());
   for (let i = 0; i < lead; i++) grid.append(el("div", { class: "cal-day out" }));
-  const monthVals = [];
-  let painFree = 0, recorded = 0;
+  const sts = [];
   for (let d = 1; d <= daysIn; d++) {
     const date = new Date(y, m, d), k = keyOf(date);
     const e = db.days[k];
-    const st = hasContent(e) ? dayStats(e) : null;
     const b = el("button", { class: "cal-day", "aria-label": fmtDate(date) });
     if (k === tk) b.classList.add("today");
     if (date > today()) b.classList.add("future");
     b.append(el("span", { class: "d", text: d }));
-    if (st) {
-      recorded++;
-      if (st.max === 0) painFree++; else monthVals.push(st);
+    if (painRecorded(e)) {
+      const st = dayStats(e);
+      sts.push(st);
       b.style.background = painVar(st.max);
       b.style.color = painInk(st.max);
       b.querySelector(".d").style.color = "inherit";
-      b.append(el("span", { class: "v", text: st.max === 0 ? "0" : st.max }));
+      b.append(el("span", { class: "v", text: st.max }));
       b.setAttribute("aria-label", `${fmtDate(date)}: stärkster Schmerz ${st.max}`);
-      if ((e.note || "").trim()) b.append(el("i", { class: "note-dot" }));
     }
+    if (hasContent(e) && ((e.note || "").trim() || (e.med || "").trim() || !painRecorded(e))) b.append(el("i", { class: "note-dot" }));
     b.onclick = () => { curDay = date; show("day"); };
     grid.append(b);
   }
   const box = document.getElementById("month-stats");
   box.textContent = "";
-  const allAvg = recorded ? [...monthVals.map(s => s.avg), ...Array(painFree).fill(0)] : [];
-  const mean = allAvg.length ? allAvg.reduce((a, b) => a + b, 0) / allAvg.length : null;
-  const maxMean = recorded ? (monthVals.reduce((a, s) => a + s.max, 0)) / recorded : null;
+  const painFree = sts.filter(s => s.max === 0).length;
   box.append(
-    tile("Ø Schmerz", fmtNum(mean), "im Monat"),
-    tile("Ø Max", fmtNum(maxMean), "Tageshöchstwert"),
-    tile("Erfasst", recorded, painFree ? `davon ${painFree} schmerzfrei` : "Tage"),
+    tile("Ø Schmerz", fmtNum(mean(sts.map(s => s.avg))), "im Monat"),
+    tile("Ø Max", fmtNum(mean(sts.map(s => s.max))), "Tageshöchstwert"),
+    tile("Erfasst", sts.length, painFree ? `davon ${painFree} schmerzfrei` : "Tage"),
   );
 }
 function tile(k, n, s, cls) {
@@ -681,15 +784,22 @@ document.getElementById("day-prev").onclick = () => { curDay = addDays(curDay, -
 document.getElementById("day-next").onclick = () => { curDay = addDays(curDay, 1); renderDay(); };
 document.getElementById("day-today").onclick = () => { curDay = today(); renderDay(); };
 
-function getEntry(create) {
+const cur = () => db.days[keyOf(curDay)];
+function getEntry() {
   const k = keyOf(curDay);
-  if (!db.days[k] && create) db.days[k] = { p: {}, note: "", tags: [] };
+  if (!db.days[k]) db.days[k] = { p: {}, note: "", tags: [] };
   return db.days[k];
 }
 function cleanupDay() {
   const k = keyOf(curDay), e = db.days[k];
   if (!e) return;
-  for (const [s, v] of Object.entries(e.p)) if (!v) delete e.p[s];
+  for (const [s, v] of Object.entries(e.p || {})) if (!v) delete e.p[s];
+  for (const o of ["s", "sl", "st", "food"]) {
+    if (!e[o]) continue;
+    for (const [s, v] of Object.entries(e[o])) if (v == null || v === "") delete e[o][s];
+    if (!Object.keys(e[o]).length) delete e[o];
+  }
+  if (!e.w) delete e.w;
   if (!hasContent(e)) delete db.days[k];
 }
 let hintTimer;
@@ -702,18 +812,19 @@ function changed() {
   clearTimeout(hintTimer); hintTimer = setTimeout(() => (h.textContent = ""), 1500);
 }
 function renderSummary() {
-  const e = db.days[keyOf(curDay)];
+  const e = cur();
   const box = document.getElementById("day-summary");
   box.textContent = "";
-  if (!e) { box.append(el("span", { text: "Noch nichts eingetragen" })); return; }
-  const st = dayStats(e);
-  if (!st.n) { box.append(el("span", { text: "Schmerzfrei" })); return; }
-  box.append(
-    el("span", {}, "Ø ", el("b", { text: fmtNum(st.avg) })),
-    el("span", {}, "Max ", el("b", { text: st.max })),
-    el("span", {}, el("b", { text: st.n }), st.n === 1 ? " Stelle" : " Stellen"),
-  );
-  // Zähler in den Gruppenköpfen aktualisieren
+  if (!painRecorded(e)) box.append(el("span", { text: hasContent(e) ? "Kein Schmerz eingetragen" : "Noch nichts eingetragen" }));
+  else {
+    const st = dayStats(e);
+    if (!st.n) box.append(el("span", { text: "Schmerzfrei" }));
+    else box.append(
+      el("span", {}, "Ø ", el("b", { text: fmtNum(st.avg) })),
+      el("span", {}, "Max ", el("b", { text: st.max })),
+      el("span", {}, el("b", { text: st.n }), st.n === 1 ? " Stelle" : " Stellen"),
+    );
+  }
   document.querySelectorAll("details.group").forEach((d, gi) => {
     d.querySelector(".cnt").textContent = groupCount(gi, e);
   });
@@ -721,13 +832,14 @@ function renderSummary() {
 function groupCount(gi, e) {
   let n = 0, mx = 0;
   for (const r of GROUPS[gi].regions) for (const id of r.pair ? [r.id + "_l", r.id + "_r"] : [r.id]) {
-    const v = (e && e.p[id]) || 0; if (v > 0) { n++; mx = Math.max(mx, v); }
+    const v = (e && e.p && e.p[id]) || 0; if (v > 0) { n++; mx = Math.max(mx, v); }
   }
   return n ? `${n} · max ${mx}` : "";
 }
+// 0–10-Regler für Schmerz/Beschwerden (0 = keine)
 function sliderSlot(id, side) {
-  const e = db.days[keyOf(curDay)];
-  const v = (e && e.p[id]) || 0;
+  const e = cur();
+  const v = (e && e.p && e.p[id]) || 0;
   const input = el("input", { type: "range", min: 0, max: 10, step: 1, value: v, "aria-label": SLOT_NAME[id] });
   const val = el("span", { class: "val" });
   const paint = n => {
@@ -738,26 +850,70 @@ function sliderSlot(id, side) {
   paint(v);
   input.addEventListener("input", () => {
     const n = +input.value; paint(n);
-    const en = getEntry(true);
+    const en = getEntry();
+    en.p = en.p || {};
     if (n) en.p[id] = n; else delete en.p[id];
     en.touched = true;
     changed();
   });
   return el("div", { class: "slot" }, el("span", { class: "side", text: side || "" }), input, val);
 }
+/* Regler mit Zustand „nicht erfasst“.
+ * o: { label, min, max, step, start, get(), set(v|null), text(v), view(v) -> Node, color, lo, hi } */
+function optSlider(o) {
+  const wrap = el("div", { class: "opt" });
+  const input = el("input", { type: "range", min: o.min, max: o.max, step: o.step || 1, "aria-label": o.label });
+  const v = el("span", { class: "v" });
+  const reset = el("button", { class: "reset", "aria-label": o.label + " zurücksetzen", text: "×" });
+  const viewBox = o.view ? el("div") : null;
+  const paint = () => {
+    const x = o.get();
+    const unset = x == null;
+    wrap.classList.toggle("unset", unset);
+    input.value = unset ? o.start : x;
+    const pct = unset ? 0 : ((x - o.min) / (o.max - o.min)) * 100;
+    input.style.setProperty("--fill", pct + "%");
+    input.style.setProperty("--c", o.color || "var(--series-1)");
+    if (o.text) { v.textContent = unset ? "–" : o.text(x); v.classList.toggle("unset", unset); }
+    reset.hidden = unset;
+    if (viewBox) { viewBox.textContent = ""; viewBox.append(o.view(unset ? null : x)); }
+  };
+  input.addEventListener("input", () => { o.set(+input.value); paint(); changed(); });
+  reset.onclick = () => { o.set(null); paint(); changed(); };
+  wrap.append(el("div", { class: "opt-head" }, el("span", { class: "lab", text: o.label }), o.text ? v : null, reset));
+  if (viewBox) wrap.append(viewBox);
+  wrap.append(input);
+  if (o.lo || o.hi) wrap.append(el("div", { class: "ends" }, el("span", { text: o.lo || "" }), el("span", { text: o.hi || "" })));
+  paint();
+  return wrap;
+}
+const setIn = (obj, key) => v => { const en = getEntry(); en[obj] = en[obj] || {}; en[obj][key] = v; };
+const symView = (list, unsetText) => x => x == null
+  ? el("div", { class: "sym" }, el("span", { class: "e", text: "·" }), el("span", { class: "t unset", text: unsetText }))
+  : el("div", { class: "sym" }, el("span", { class: "e", text: list[x - 1][0] }), el("span", { class: "t", text: list[x - 1][1] }));
+
 function renderDay() {
   const t = today();
   const diff = Math.round((curDay - t) / 86400000);
   document.getElementById("day-title").textContent = fmtDate(curDay);
   document.getElementById("day-subtitle").textContent =
     DOW_L[curDay.getDay()] + (diff === 0 ? " · heute" : diff === -1 ? " · gestern" : diff === 1 ? " · morgen" : "");
-  const e = db.days[keyOf(curDay)];
+  const e = cur();
+
+  // Befinden
+  const mood = document.getElementById("mood");
+  mood.textContent = "";
+  for (const m of MOOD) mood.append(optSlider({
+    label: m.name, min: 0, max: 10, start: 5, lo: "0 " + m.lo, hi: m.hi + " 10",
+    get: () => cur()?.s?.[m.id] ?? null, set: setIn("s", m.id), text: x => String(x),
+  }));
+
+  // Körperstellen
   const wrap = document.getElementById("regions");
   wrap.textContent = "";
   GROUPS.forEach((g, gi) => {
     const det = el("details", { class: "group" });
-    // Gruppen mit Werten automatisch aufklappen
-    if (openGroups.has(gi) || groupCount(gi, e)) det.open = true;
+    if (openGroups.has(gi) || groupCount(gi, e) || (g.stool && filled(e?.st))) det.open = true;
     det.addEventListener("toggle", () => det.open ? openGroups.add(gi) : openGroups.delete(gi));
     det.append(el("summary", {},
       el("span", { text: g.name }),
@@ -769,11 +925,75 @@ function renderDay() {
       else row.append(sliderSlot(r.id));
       det.append(row);
     }
+    if (g.stool) det.append(stoolBox());
     wrap.append(det);
   });
-  renderDayTags();
+
+  // Haut
+  const skin = document.getElementById("skin");
+  skin.textContent = "";
+  skin.append(el("div", { class: "region", style: "padding:0;border:0" }, el("div", { class: "name", text: "Ausprägung" }), sliderSlot("haut")));
+  document.getElementById("skin-note").value = (e && e.skin) || "";
+
+  // Schlaf
+  const sleep = document.getElementById("sleep");
+  sleep.textContent = "";
+  sleep.append(
+    optSlider({ label: "Schlafqualität", min: 1, max: 5, start: 3, get: () => cur()?.sl?.q ?? null, set: setIn("sl", "q"),
+      view: symView(SLEEP, "nicht erfasst – Regler bewegen") }),
+    optSlider({ label: "Schlafdauer", min: 0, max: 14, step: 0.5, start: 7, get: () => cur()?.sl?.h ?? null, set: setIn("sl", "h"),
+      text: fmtHours, lo: "0 h", hi: "14 h" }),
+  );
+
+  // Wetter
+  const weather = document.getElementById("weather");
+  weather.textContent = "";
+  weather.append(optSlider({ label: "Wetter", min: 1, max: WEATHER.length, start: 1, get: () => cur()?.w ?? null,
+    set: v => { getEntry().w = v; }, view: symView(WEATHER, "nicht erfasst – Regler bewegen") }));
+
+  // Texte
+  for (const ta of document.querySelectorAll("[data-food]")) ta.value = (e && e.food && e.food[ta.dataset.food]) || "";
   document.getElementById("day-note").value = (e && e.note) || "";
+  document.getElementById("day-med").value = (e && e.med) || "";
+  renderDayTags();
   renderSummary();
+}
+function stoolBox() {
+  const box = el("div", { class: "stool" });
+  const draw = () => {
+    box.textContent = "";
+    const st = cur()?.st || {};
+    const n = st.n ?? null;
+    const step = d => () => {
+      const en = getEntry(); en.st = en.st || {};
+      const nv = Math.max(0, (en.st.n ?? 0) + d);
+      en.st.n = nv;
+      if (nv === 0) delete en.st.b;
+      changed(); draw();
+    };
+    box.append(el("div", { class: "opt-head" },
+      el("span", { class: "lab", text: "Stuhlgang (Anzahl)" }),
+      el("div", { class: "stepper" },
+        el("button", { "aria-label": "weniger", text: "−", onclick: step(-1) }),
+        el("span", { text: n == null ? "–" : n }),
+        el("button", { "aria-label": "mehr", text: "+", onclick: step(1) })),
+      n != null ? el("button", { class: "reset", "aria-label": "Stuhlgang zurücksetzen", text: "×", onclick: () => {
+        const en = getEntry(); delete en.st; changed(); draw();
+      }}) : null));
+    box.append(el("div", { class: "small", style: "margin-top:10px", text: "Konsistenz (Bristol-Skala)" }));
+    const grid = el("div", { class: "bristol" });
+    BRISTOL.forEach((t, i) => grid.append(el("button", {
+      class: "chip", "aria-pressed": st.b === i + 1 ? "true" : "false",
+      onclick: () => {
+        const en = getEntry(); en.st = en.st || {};
+        en.st.b = en.st.b === i + 1 ? null : i + 1;
+        if (en.st.b && !en.st.n) en.st.n = 1;
+        changed(); draw();
+      } }, `Typ ${i + 1}`, el("small", { text: t }))));
+    box.append(grid);
+  };
+  draw();
+  return box;
 }
 function chev() {
   const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -782,14 +1002,14 @@ function chev() {
   return s;
 }
 function renderDayTags() {
-  const e = db.days[keyOf(curDay)];
+  const e = cur();
   const on = new Set((e && e.tags) || []);
   const box = document.getElementById("day-tags");
   box.textContent = "";
   const all = [...db.tags, ...[...on].filter(t => !db.tags.includes(t))];
   for (const t of all) {
     box.append(el("button", { class: "chip", "aria-pressed": on.has(t) ? "true" : "false", text: t, onclick: () => {
-      const en = getEntry(true);
+      const en = getEntry();
       en.tags = en.tags || [];
       if (en.tags.includes(t)) en.tags = en.tags.filter(x => x !== t); else en.tags.push(t);
       changed(); renderDayTags();
@@ -797,38 +1017,44 @@ function renderDayTags() {
   }
 }
 document.getElementById("tag-add").onclick = () => {
-  const t = (prompt("Neue Markierung (z. B. „Migräne-Tablette“, „Yoga“):") || "").trim();
+  const t = (prompt("Neue Markierung (z. B. „Yoga“, „Alkohol“):") || "").trim();
   if (!t) return;
   if (!db.tags.includes(t)) db.tags.push(t);
-  const en = getEntry(true);
+  const en = getEntry();
   en.tags = en.tags || [];
   if (!en.tags.includes(t)) en.tags.push(t);
   changed(); renderDayTags();
 };
-let noteTimer;
-document.getElementById("day-note").addEventListener("input", ev => {
-  const en = getEntry(true);
-  en.note = ev.target.value;
-  clearTimeout(noteTimer); noteTimer = setTimeout(changed, 400);
-});
-document.getElementById("day-note").addEventListener("blur", () => { clearTimeout(noteTimer); if (db.days[keyOf(curDay)]) changed(); });
+// Textfelder: speichern beim Tippen (verzögert) und beim Verlassen
+let textTimer;
+function bindText(elm, write) {
+  elm.addEventListener("input", () => { write(elm.value); clearTimeout(textTimer); textTimer = setTimeout(changed, 400); });
+  elm.addEventListener("blur", () => { clearTimeout(textTimer); if (cur()) changed(); });
+}
+bindText(document.getElementById("day-note"), v => { getEntry().note = v; });
+bindText(document.getElementById("day-med"), v => { getEntry().med = v; });
+bindText(document.getElementById("skin-note"), v => { getEntry().skin = v; });
+for (const ta of document.querySelectorAll("[data-food]")) bindText(ta, v => { const en = getEntry(); en.food = en.food || {}; en.food[ta.dataset.food] = v; });
+
 document.getElementById("day-copy").onclick = () => {
-  // nimmt den letzten Tag mit Einträgen vor dem aktuellen
+  // nimmt den letzten Tag mit Schmerzwerten vor dem aktuellen
   let src = null;
   for (let i = 1; i <= 60 && !src; i++) {
     const e = db.days[keyOf(addDays(curDay, -i))];
     if (e && Object.keys(e.p || {}).length) src = e;
   }
   if (!src) { toast("Kein früherer Eintrag mit Werten gefunden"); return; }
-  const en = getEntry(true);
-  if (Object.keys(en.p).length && !confirm("Die Werte dieses Tages durch die des letzten Eintrags ersetzen?")) return;
-  en.p = { ...src.p };
+  const en = getEntry();
+  if (Object.keys(en.p || {}).length && !confirm("Die Schmerzwerte dieses Tages durch die des letzten Eintrags ersetzen?")) return;
+  en.p = { ...src.p }; en.touched = true;
   changed(); renderDay(); toast("Werte übernommen – jetzt anpassen");
 };
 document.getElementById("day-free").onclick = () => {
-  const en = getEntry(true);
-  if (Object.keys(en.p).length && !confirm("Alle Schmerzwerte dieses Tages auf 0 setzen?")) return;
-  en.p = {}; en.touched = true;
+  const en = getEntry();
+  const hasPain = Object.entries(en.p || {}).some(([id, v]) => v > 0 && isPain(id));
+  if (hasPain && !confirm("Alle Schmerzwerte dieses Tages auf 0 setzen?")) return;
+  for (const id of Object.keys(en.p || {})) if (isPain(id)) delete en.p[id];
+  en.touched = true;
   changed(); renderDay(); toast("Als schmerzfreier Tag eingetragen");
 };
 document.getElementById("day-clear").onclick = () => {
@@ -843,6 +1069,7 @@ document.getElementById("day-clear").onclick = () => {
  * ------------------------------------------------------------------ */
 const F = { range: "30", group: "day", metric: "avg", region: "" };
 try { Object.assign(F, JSON.parse(localStorage.getItem(KEY + ".filters") || "{}")); } catch (e) {}
+if (F.region && !SERIES[F.region]) F.region = "";
 function setSeg(id, key) {
   const box = document.getElementById(id);
   const sync = () => box.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === F[key] ? "true" : "false"));
@@ -859,7 +1086,11 @@ const syncAll = () => syncers.forEach(s => s());
 function persistFilters() { try { localStorage.setItem(KEY + ".filters", JSON.stringify(F)); } catch (e) {} }
 {
   const sel = document.getElementById("f-region");
-  sel.append(el("option", { value: "", text: "— keine —" }));
+  sel.append(el("option", { value: "", text: "— nichts —" }));
+  const og0 = el("optgroup", { label: "Befinden, Schlaf, Verdauung" });
+  for (const s of SERIES_DEFS) og0.append(el("option", { value: s.id, text: s.name }));
+  og0.append(el("option", { value: "haut", text: "Haut / Nägel" }));
+  sel.append(og0);
   for (const g of GROUPS) {
     const og = el("optgroup", { label: g.name });
     for (const r of g.regions) {
@@ -886,7 +1117,7 @@ function daysIn(start, end) {
   const out = [];
   for (let d = start; d <= end; d = addDays(d, 1)) {
     const e = db.days[keyOf(d)];
-    out.push({ date: d, e: hasContent(e) ? e : null });
+    out.push({ date: d, e: hasContent(e) ? e : null, pain: painRecorded(e) });
   }
   return out;
 }
@@ -896,15 +1127,16 @@ function bucketKey(d, group) {
   return keyOf(d);
 }
 function bucketLabel(k, group, long) {
-  if (group === "month") { const [y, m] = k.split("-").map(Number); return long ? `${MONTHS[m - 1]} ${y}` : `${MONTHS_S[m - 1]}${String(y).slice(2) !== String(today().getFullYear()).slice(2) ? " " + String(y).slice(2) : ""}`; }
+  if (group === "month") { const [y, m] = k.split("-").map(Number); return long ? `${MONTHS[m - 1]} ${y}` : `${MONTHS_S[m - 1]}${y !== today().getFullYear() ? " " + String(y).slice(2) : ""}`; }
   const d = parseKey(k);
   if (group === "week") return long ? `KW ${isoWeek(d)} (${fmtShort(d)}–${fmtShort(addDays(d, 6))})` : fmtShort(d);
   return long ? `${DOW[dowMon(d)]}, ${fmtDate(d)}` : fmtShort(d);
 }
 const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+const nn = a => a.filter(v => v != null);
 
 function periodSummary(days) {
-  const rec = days.filter(x => x.e);
+  const rec = days.filter(x => x.pain);
   const st = rec.map(x => dayStats(x.e));
   return {
     recorded: rec.length,
@@ -913,8 +1145,26 @@ function periodSummary(days) {
     maxAvg: mean(st.map(s => s.max)),
     peak: st.length ? Math.max(...st.map(s => s.max)) : null,
     painFree: st.filter(s => s.max === 0).length,
-    region: F.region ? mean(rec.map(x => x.e.p[F.region] || 0)) : null,
+    region: F.region ? mean(nn(days.filter(x => x.e).map(x => SERIES[F.region].get(x.e)))) : null,
+    ...Object.fromEntries(MOOD.map(m => [m.id, mean(nn(days.filter(x => x.e).map(x => x.e.s?.[m.id] ?? null)))])),
   };
+}
+
+// Werte je Tag/Woche/Monat bündeln. series: [{key, get(day) -> Zahl|null}]
+function bucketize(days, series) {
+  const buckets = new Map();
+  for (const x of days) {
+    const k = bucketKey(x.date, F.group);
+    if (!buckets.has(k)) buckets.set(k, { k, n: 0, vals: Object.fromEntries(series.map(s => [s.key, []])) });
+    const b = buckets.get(k);
+    let any = false;
+    for (const s of series) { const v = s.get(x); if (v != null) { b.vals[s.key].push(v); any = true; } }
+    if (any) b.n++;
+  }
+  return [...buckets.values()].map(b => ({
+    k: b.k, label: bucketLabel(b.k, F.group), long: bucketLabel(b.k, F.group, true), n: b.n,
+    ...Object.fromEntries(series.map(s => [s.key, mean(b.vals[s.key])])),
+  }));
 }
 
 function renderStats() {
@@ -924,7 +1174,7 @@ function renderStats() {
   const days = daysIn(start, end);
   const len = days.length;
   const prevDays = daysIn(addDays(start, -len), addDays(start, -1));
-  const cur = periodSummary(days), prev = periodSummary(prevDays);
+  const curS = periodSummary(days), prev = periodSummary(prevDays);
   const metricKey = F.metric === "avg" ? "avg" : "maxAvg";
   const metricName = F.metric === "avg" ? "Ø Schmerz" : "Ø Tagesmaximum";
 
@@ -932,74 +1182,74 @@ function renderStats() {
   const tiles = document.getElementById("tiles");
   tiles.textContent = "";
   let deltaTxt = "kein Vergleich möglich", deltaCls = "";
-  if (cur[metricKey] != null && prev[metricKey] != null) {
-    const d = cur[metricKey] - prev[metricKey];
+  if (curS[metricKey] != null && prev[metricKey] != null) {
+    const d = curS[metricKey] - prev[metricKey];
     deltaTxt = (Math.abs(d) < 0.05 ? "± 0,0" : (d > 0 ? "▲ +" : "▼ ") + fmtNum(d)) + " vs. davor";
     deltaCls = d > 0.05 ? "delta-up" : d < -0.05 ? "delta-down" : "";
   }
-  const t1 = tile(metricName, fmtNum(cur[metricKey]), deltaTxt);
+  const t1 = tile(metricName, fmtNum(curS[metricKey]), deltaTxt);
   if (deltaCls) t1.querySelector(".s").className = "s " + deltaCls;
   tiles.append(
     t1,
-    tile("Spitzenwert", cur.peak == null ? "–" : cur.peak, "höchster Wert im Zeitraum"),
-    tile("Schmerzfreie Tage", cur.painFree, cur.recorded ? `von ${cur.recorded} erfassten` : "keine Einträge"),
-    tile("Erfasst", `${cur.recorded}/${cur.total}`, "Tage im Zeitraum"),
+    tile("Spitzenwert", curS.peak == null ? "–" : curS.peak, "höchster Wert im Zeitraum"),
+    tile("Schmerzfreie Tage", curS.painFree, curS.recorded ? `von ${curS.recorded} erfassten` : "keine Einträge"),
+    tile("Ø Tagesverfassung", fmtNum(curS.verfassung), "0 = sehr schlecht, 10 = sehr gut"),
   );
 
-  // Verlauf
-  const buckets = new Map();
-  for (const x of days) {
-    const k = bucketKey(x.date, F.group);
-    if (!buckets.has(k)) buckets.set(k, { k, all: [], reg: [] });
-    if (x.e) {
-      buckets.get(k).all.push(dayValue(x.e, F.metric));
-      if (F.region) buckets.get(k).reg.push(dayValue(x.e, F.metric, F.region));
-    }
-  }
-  const pts = [...buckets.values()].map(b => ({ k: b.k, label: bucketLabel(b.k, F.group), long: bucketLabel(b.k, F.group, true), n: b.all.length, a: mean(b.all), r: F.region ? mean(b.reg) : null }));
+  // Verlauf Schmerz (+ Vergleichsreihe)
+  const series = [{ key: "a", name: F.metric === "avg" ? "Schmerz (Ø)" : "Schmerz (Max)", color: "var(--series-1)",
+    get: x => x.pain ? dayValue(x.e, F.metric) : null }];
+  if (F.region) series.push({ key: "r", name: SERIES[F.region].name, color: "var(--series-2)", get: x => x.e ? SERIES[F.region].get(x.e) : null });
+  const pts = bucketize(days, series);
   const groupWord = { day: "Tag", week: "Woche", month: "Monat" }[F.group];
   document.getElementById("trend-title").textContent = `Verlauf je ${groupWord}`;
   document.getElementById("trend-sub").textContent = F.group === "day"
     ? (F.metric === "avg" ? "Ø der schmerzenden Stellen pro Tag (schmerzfreier Tag = 0)." : "Stärkster Schmerz pro Tag.")
     : (F.metric === "avg" ? `Mittelwert der Tages-Ø je ${groupWord}.` : `Mittelwert der Tagesmaxima je ${groupWord}.`);
-  const series = [{ key: "a", name: F.metric === "avg" ? "Gesamt (Ø)" : "Gesamt (Max)", color: "var(--series-1)" }];
-  if (F.region) series.push({ key: "r", name: SLOT_NAME[F.region], color: "var(--series-2)" });
-  const leg = document.getElementById("trend-legend");
-  leg.textContent = "";
-  if (series.length > 1) for (const s of series) leg.append(el("span", {}, el("i", { style: `background:${s.color}` }), s.name));
-  lineChart(document.getElementById("trend-chart"), pts, series);
+  legend(document.getElementById("trend-legend"), series);
+  lineChart(document.getElementById("trend-chart"), pts, series, "Schmerzverlauf");
   trendTable(pts, series);
 
+  // Verlauf Befinden
+  const moodSeries = MOOD.map((m, i) => ({ key: m.id, name: m.name, color: `var(--series-${i + 1})`, get: x => x.e?.s?.[m.id] ?? null }));
+  const mpts = bucketize(days, moodSeries);
+  document.getElementById("mood-sub").textContent = "Verfassung und psychischer Zustand: 10 = sehr gut. Unruhe: 10 = sehr unruhig.";
+  legend(document.getElementById("mood-legend"), moodSeries);
+  lineChart(document.getElementById("mood-chart"), mpts, moodSeries, "Befinden", "Im Zeitraum wurde kein Befinden eingetragen.");
+
   regionBars(days);
-  periodCompare(cur, prev, start, end, len);
+  periodCompare(curS, prev, start, end, len);
   tagCompare(days);
+  influence(days);
   weekdayBars(days);
+}
+function legend(box, series) {
+  box.textContent = "";
+  if (series.length > 1) for (const s of series) box.append(el("span", {}, el("i", { style: `background:${s.color}` }), s.name));
 }
 
 /* --- Liniendiagramm (SVG, eigene Umsetzung, funktioniert offline) --- */
-function lineChart(host, pts, series) {
+function lineChart(host, pts, series, label, emptyText) {
   host.textContent = "";
-  if (!pts.some(p => p.n)) { host.append(el("div", { class: "empty", text: "Im gewählten Zeitraum gibt es noch keine Einträge." })); return; }
+  if (!pts.some(p => p.n)) { host.append(el("div", { class: "empty", text: emptyText || "Im gewählten Zeitraum gibt es noch keine Einträge." })); return; }
+  const top = Math.max(10, Math.ceil(Math.max(...pts.flatMap(p => series.map(s => p[s.key] ?? 0))) / 2) * 2);
   const W = Math.max(300, host.clientWidth || 340), H = 220;
   const m = { l: 26, r: 8, t: 10, b: 24 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   const n = pts.length;
   const x = i => m.l + (n === 1 ? iw / 2 : (i / (n - 1)) * iw);
-  const y = v => m.t + ih - (v / 10) * ih;
+  const y = v => m.t + ih - (v / top) * ih;
   const NS = "http://www.w3.org/2000/svg";
   const s = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); return e; };
-  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Schmerzverlauf" });
-  // Raster
-  for (const v of [0, 2, 4, 6, 8, 10]) {
+  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": label });
+  for (let v = 0; v <= top; v += top > 10 ? 4 : 2) {
     svg.append(s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: v === 0 ? "var(--line)" : "var(--grid)", "stroke-width": 1 }));
     const t = s("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }); t.textContent = v; svg.append(t);
   }
-  // X-Beschriftung: höchstens ~6 Labels
   const step = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(iw / 58))));
   for (let i = 0; i < n; i += step) {
     const t = s("text", { x: x(i), y: H - 6, "text-anchor": n === 1 ? "middle" : i === 0 ? "start" : "middle" }); t.textContent = pts[i].label; svg.append(t);
   }
-  // Linien (Lücken bei Tagen ohne Eintrag)
   for (const se of series) {
     let d = "", pen = false;
     pts.forEach((p, i) => {
@@ -1008,14 +1258,12 @@ function lineChart(host, pts, series) {
       d += (pen ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1); pen = true;
     });
     svg.append(s("path", { d, fill: "none", stroke: se.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
-    // Punkte: bei wenigen Punkten alle, sonst nur isolierte (sonst unsichtbar)
     pts.forEach((p, i) => {
       const v = p[se.key]; if (v == null) return;
       const isolated = (i === 0 || pts[i - 1][se.key] == null) && (i === n - 1 || pts[i + 1][se.key] == null);
       if (n <= 40 || isolated) svg.append(s("circle", { cx: x(i), cy: y(v), r: 4, fill: se.color, stroke: "var(--surface)", "stroke-width": 2 }));
     });
   }
-  // Fadenkreuz + Tooltip
   const cross = s("line", { y1: m.t, y2: m.t + ih, stroke: "var(--text-3)", "stroke-width": 1, visibility: "hidden" });
   svg.append(cross);
   const hit = s("rect", { x: m.l, y: 0, width: iw, height: H, fill: "transparent" });
@@ -1071,70 +1319,73 @@ function trendTable(pts, series) {
   box.append(t);
 }
 
-/* --- Balken je Körperstelle --- */
-function hbars(host, rows, max, fmt = r => fmtNum(r.v), sub = r => r.sub) {
+/* --- Balken --- */
+function hbars(host, rows, max, emptyText) {
   host.textContent = "";
-  if (!rows.length) { host.append(el("div", { class: "empty", text: "Keine Daten im Zeitraum." })); return; }
+  if (!rows.length) { host.append(el("div", { class: "empty", text: emptyText || "Keine Daten im Zeitraum." })); return; }
   for (const r of rows) {
-    const bar = el("div", { class: "bar", style: `width:${Math.max(0, (r.v / max) * 100)}%` + (r.color ? `;background:${r.color}` : "") });
-    host.append(el("div", { class: "bar-row", title: `${r.label}: ${fmt(r)}` },
+    const bar = el("div", { class: "bar", style: `width:${Math.max(0, (r.v / max) * 100)}%` });
+    host.append(el("div", { class: "bar-row", title: `${r.label}: ${fmtNum(r.v)}` },
       el("span", { class: "lbl", text: r.label }),
       el("div", { class: "track" }, bar),
-      el("span", { class: "num" }, fmt(r), sub(r) ? el("small", { text: sub(r) }) : null)));
+      el("span", { class: "num" }, fmtNum(r.v), r.sub ? el("small", { text: r.sub }) : null)));
   }
 }
 function regionBars(days) {
-  const rec = days.filter(x => x.e);
-  const host = document.getElementById("region-bars");
-  if (!rec.length) { hbars(host, []); return; }
+  const rec = days.filter(x => x.pain);
   const rows = [];
   for (const s of SLOTS) {
-    const vals = rec.map(x => x.e.p[s.id] || 0);
+    const vals = rec.map(x => x.e.p?.[s.id] || 0);
     const hit = vals.filter(v => v > 0).length;
     if (!hit) continue;
     rows.push({ label: s.name, v: mean(vals), sub: `${hit} ${hit === 1 ? "Tag" : "Tage"}` });
   }
   rows.sort((a, b) => b.v - a.v);
-  if (!rows.length) { host.textContent = ""; host.append(el("div", { class: "empty", text: "Im Zeitraum keine Schmerzen eingetragen." })); return; }
-  hbars(host, rows, 10);
+  hbars(document.getElementById("region-bars"), rows, 10, rec.length ? "Im Zeitraum keine Schmerzen eingetragen." : "Keine Daten im Zeitraum.");
 }
 
 /* --- Zeitraum vs. Vorzeitraum --- */
-function periodCompare(cur, prev, start, end, len) {
+function periodCompare(curS, prev, start, end, len) {
   const ps = addDays(start, -len), pe = addDays(start, -1);
   document.getElementById("cmp-sub").textContent = `${fmtShort(start)}${start.getFullYear() !== end.getFullYear() ? start.getFullYear() : ""}–${fmtShort(end)}${end.getFullYear()} verglichen mit den ${len} Tagen davor (${fmtShort(ps)}${ps.getFullYear()}–${fmtShort(pe)}${pe.getFullYear()}).`;
   const host = document.getElementById("period-cmp");
   host.textContent = "";
   host.append(el("div", { class: "cmp-row h" }, el("span", { text: "" }), el("span", { text: "Jetzt" }), el("span", { text: "Davor" }), el("span", { text: "Änderung" })));
+  // better: +1 wenn ein höherer Wert besser ist, -1 wenn schlechter, 0 neutral
   const rows = [
-    ["Ø Schmerz", "avg"],
-    ["Ø Tagesmaximum", "maxAvg"],
-    ["Spitzenwert", "peak"],
-    ["Schmerzfreie Tage", "painFree", true],
-    ["Erfasste Tage", "recorded", true],
+    ["Ø Schmerz", "avg", -1],
+    ["Ø Tagesmaximum", "maxAvg", -1],
+    ["Spitzenwert", "peak", -1, "int"],
+    ["Schmerzfreie Tage", "painFree", 1, "count"],
+    ["Erfasste Tage", "recorded", 0, "count"],
+    ["Ø Tagesverfassung", "verfassung", 1],
+    ["Ø Psychischer Zustand", "psyche", 1],
+    ["Ø Unruhe", "unruhe", -1],
   ];
-  if (F.region) rows.push([`Ø ${SLOT_NAME[F.region]}`, "region"]);
-  for (const [label, k, isCount] of rows) {
-    const a = cur[k], b = prev[k];
+  if (F.region && !F.region.startsWith("s:")) rows.push([`Ø ${SERIES[F.region].name}`, "region", SERIES_DEFS.some(s => s.id === F.region) ? 0 : -1]);
+  for (const [label, k, better, kind] of rows) {
+    const a = curS[k], b = prev[k];
+    const isCount = kind === "count";
     let dTxt = "–", cls = "";
-    const usable = isCount ? prev.recorded > 0 && cur.recorded > 0 : a != null && b != null;
+    const usable = isCount ? prev.recorded > 0 && curS.recorded > 0 : a != null && b != null;
     if (usable) {
       const d = a - b;
-      dTxt = d === 0 ? "±0" : (d > 0 ? "+" : "−") + (isCount ? Math.abs(d) : fmtNum(Math.abs(d)));
-      if (k !== "recorded" && Math.abs(d) >= (isCount ? 1 : 0.05)) {
-        const worse = k === "painFree" ? d < 0 : d > 0;
+      dTxt = Math.abs(d) < (isCount ? 1 : 0.05) ? "±0" : (d > 0 ? "+" : "−") + (isCount || kind === "int" ? Math.abs(d) : fmtNum(Math.abs(d)));
+      if (better && Math.abs(d) >= (isCount ? 1 : 0.05)) {
+        const worse = better > 0 ? d < 0 : d > 0;
         cls = worse ? "delta-up" : "delta-down";
         dTxt = (worse ? "▲ " : "▼ ") + dTxt;
       }
     }
-    const f = v => v == null ? "–" : isCount || k === "peak" ? String(v) : fmtNum(v);
+    const f = v => v == null ? "–" : isCount || kind === "int" ? String(v) : fmtNum(v);
     host.append(el("div", { class: "cmp-row" }, el("span", { text: label }), el("b", { text: f(a) }), el("span", { class: "muted", text: f(b) }), el("span", { class: cls, text: dTxt })));
   }
+  host.append(el("p", { class: "small", style: "margin:8px 0 0", text: "▲ rot = schlechter, ▼ grün = besser als davor." }));
 }
 
 /* --- Markierungen: mit / ohne --- */
 function tagCompare(days) {
-  const rec = days.filter(x => x.e);
+  const rec = days.filter(x => x.pain);
   const host = document.getElementById("tag-cmp");
   host.textContent = "";
   const tags = new Map();
@@ -1151,9 +1402,41 @@ function tagCompare(days) {
   host.append(el("p", { class: "small", style: "margin:8px 0 0", text: `Kennzahl: ${F.metric === "avg" ? "Ø der schmerzenden Stellen" : "stärkster Schmerz"} pro Tag. Farbig, wenn der Unterschied mindestens 0,5 beträgt.` }));
 }
 
+/* --- Wetter & Schlaf: Ø Schmerz je Kategorie --- */
+function influence(days) {
+  const rec = days.filter(x => x.pain);
+  document.getElementById("infl-sub").textContent = `${F.metric === "avg" ? "Ø Schmerz" : "Ø Tagesmaximum"} an Tagen mit dem jeweiligen Wetter bzw. der jeweiligen Schlafqualität.`;
+  const host = document.getElementById("infl");
+  host.textContent = "";
+  const block = (title, list, get) => {
+    const rows = [];
+    list.forEach(([icon, name], i) => {
+      const vals = rec.filter(x => get(x.e) === i + 1).map(x => dayValue(x.e, F.metric));
+      if (vals.length) rows.push({ label: `${icon} ${name}`, v: mean(vals), sub: `${vals.length}×` });
+    });
+    host.append(el("div", { class: "small", style: "font-weight:600;margin:6px 0 4px", text: title }));
+    const box = el("div");
+    hbars(box, rows, 10, "Noch keine Tage mit Schmerz und dieser Angabe.");
+    host.append(box);
+  };
+  block("Wetter", WEATHER, e => e.w);
+  block("Schlafqualität", SLEEP, e => e.sl?.q);
+  // Schlafdauer in Gruppen
+  const groups = [["< 6 h", h => h < 6], ["6–8 h", h => h >= 6 && h < 8], ["≥ 8 h", h => h >= 8]];
+  const rows = [];
+  for (const [name, test] of groups) {
+    const vals = rec.filter(x => x.e.sl?.h != null && test(x.e.sl.h)).map(x => dayValue(x.e, F.metric));
+    if (vals.length) rows.push({ label: "Schlaf " + name, v: mean(vals), sub: `${vals.length}×` });
+  }
+  host.append(el("div", { class: "small", style: "font-weight:600;margin:10px 0 4px", text: "Schlafdauer" }));
+  const box = el("div");
+  hbars(box, rows, 10, "Noch keine Tage mit Schmerz und Schlafdauer.");
+  host.append(box);
+}
+
 /* --- Wochentage --- */
 function weekdayBars(days) {
-  const rec = days.filter(x => x.e);
+  const rec = days.filter(x => x.pain);
   const by = Array.from({ length: 7 }, () => []);
   for (const x of rec) by[dowMon(x.date)].push(dayValue(x.e, F.metric));
   const rows = by.map((a, i) => ({ label: ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"][i], v: mean(a) || 0, n: a.length, sub: a.length ? `${a.length}×` : "" })).filter(r => r.n);
@@ -1164,8 +1447,8 @@ function weekdayBars(days) {
  * Daten: Export / Import
  * ------------------------------------------------------------------ */
 function renderStorageInfo() {
-  const n = Object.keys(db.days).length;
   const keys = Object.keys(db.days).sort();
+  const n = keys.length;
   const info = document.getElementById("storage-info");
   if (!info) return;
   const standalone = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
@@ -1210,14 +1493,45 @@ async function exportJson() {
 document.getElementById("export-json").onclick = exportJson;
 document.getElementById("export-csv").onclick = () => {
   const esc = v => { const s = String(v ?? ""); return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-  const head = ["Datum", "Wochentag", "Ø Schmerz", "Max", "Anzahl Stellen", ...SLOTS.map(s => s.name), "Markierungen", "Notiz"];
+  const used = new Set(Object.values(db.days).flatMap(e => Object.keys(e.p || {})));
+  const slots = SLOTS.filter(s => !s.legacy || used.has(s.id));
+  const head = ["Datum", "Wochentag", "Ø Schmerz", "Max Schmerz", "Anzahl Stellen", ...MOOD.map(m => m.name),
+    ...slots.map(s => s.name), "Haut/Nägel: wo/was", "Stuhlgänge", "Stuhl Bristol-Typ",
+    "Schlafqualität (1-5)", "Schlafdauer (h)", "Wetter", "Frühstück", "Mittagessen", "Abendessen",
+    "Markierungen", "Medikamente", "Notiz"];
   const lines = [head.map(esc).join(";")];
   for (const k of Object.keys(db.days).sort()) {
-    const e = db.days[k], st = dayStats(e), d = parseKey(k);
-    lines.push([k, DOW_L[d.getDay()], fmtNum(st.avg), st.max, st.n, ...SLOTS.map(s => e.p[s.id] || ""), (e.tags || []).join(", "), e.note || ""].map(esc).join(";"));
+    const e = db.days[k], d = parseKey(k), pr = painRecorded(e), st = dayStats(e);
+    lines.push([k, DOW_L[d.getDay()], pr ? fmtNum(st.avg) : "", pr ? st.max : "", pr ? st.n : "",
+      ...MOOD.map(m => e.s?.[m.id] ?? ""),
+      ...slots.map(s => e.p?.[s.id] || ""), e.skin || "", e.st?.n ?? "", e.st?.b ?? "",
+      e.sl?.q ?? "", e.sl?.h != null ? fmtNum(e.sl.h) : "", e.w ? WEATHER[e.w - 1][1] : "",
+      e.food?.f || "", e.food?.m || "", e.food?.a || "",
+      (e.tags || []).join(", "), e.med || "", e.note || ""].map(esc).join(";"));
   }
   shareOrDownload(`schmerztagebuch-${keyOf(today())}.csv`, "﻿" + lines.join("\r\n"), "text/csv");
 };
+
+// Eintrag aus einer Sicherung prüfen und nur bekannte Felder übernehmen
+function sanitizeEntry(e) {
+  const num = (v, lo, hi, step = 1) => { const n = Math.round(+v / step) * step; return v != null && v !== "" && isFinite(n) && n >= lo && n <= hi ? n : null; };
+  const str = v => typeof v === "string" ? v : "";
+  const out = { p: {}, note: str(e.note), tags: Array.isArray(e.tags) ? e.tags.filter(t => typeof t === "string") : [] };
+  for (const [s, v] of Object.entries(e.p || {})) { const n = num(v, 1, 10); if (SLOT_NAME[s] && n) out.p[s] = n; }
+  if (e.touched) out.touched = true;
+  if (str(e.med)) out.med = e.med;
+  if (str(e.skin)) out.skin = e.skin;
+  const s = {}; for (const m of MOOD) { const n = num(e.s?.[m.id], 0, 10); if (n != null) s[m.id] = n; }
+  if (Object.keys(s).length) out.s = s;
+  const w = num(e.w, 1, WEATHER.length); if (w) out.w = w;
+  const sl = {}; const q = num(e.sl?.q, 1, 5); if (q) sl.q = q; const h = num(e.sl?.h, 0, 14, 0.5); if (h != null) sl.h = h;
+  if (Object.keys(sl).length) out.sl = sl;
+  const st = {}; const sn = num(e.st?.n, 0, 50); if (sn != null) st.n = sn; const sb = num(e.st?.b, 1, 7); if (sb) st.b = sb;
+  if (Object.keys(st).length) out.st = st;
+  const food = {}; for (const k of ["f", "m", "a"]) if (str(e.food?.[k])) food[k] = e.food[k];
+  if (Object.keys(food).length) out.food = food;
+  return out;
+}
 let importMode = "merge";
 document.getElementById("import-merge").onclick = () => { importMode = "merge"; document.getElementById("import-file").click(); };
 document.getElementById("import-replace").onclick = () => { importMode = "replace"; document.getElementById("import-file").click(); };
@@ -1228,19 +1542,16 @@ document.getElementById("import-file").addEventListener("change", async ev => {
   try { data = JSON.parse(await f.text()); } catch (e) { alert("Die Datei ist keine gültige Sicherung (.json)."); return; }
   if (!data || typeof data.days !== "object") { alert("In der Datei wurden keine Tageseinträge gefunden."); return; }
   const incoming = normalize(data);
-  // Grundlegende Prüfung der Einträge
   const clean = {};
   for (const [k, e] of Object.entries(incoming.days)) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !e || typeof e !== "object") continue;
-    const p = {};
-    for (const [s, v] of Object.entries(e.p || {})) { const n = Math.round(+v); if (SLOT_NAME[s] && n > 0 && n <= 10) p[s] = n; }
-    clean[k] = { p, note: typeof e.note === "string" ? e.note : "", tags: Array.isArray(e.tags) ? e.tags.filter(t => typeof t === "string") : [] };
-    if (e.touched) clean[k].touched = true;
+    const c = sanitizeEntry(e);
+    if (hasContent(c)) clean[k] = c;
   }
   const n = Object.keys(clean).length;
   if (importMode === "replace") {
     if (!confirm(`Alle vorhandenen Einträge durch ${n} Tage aus der Datei ersetzen?`)) return;
-    db = { version: 1, days: clean, tags: incoming.tags, lastExport: db.lastExport };
+    db = { version: 2, days: clean, tags: incoming.tags, lastExport: db.lastExport };
   } else {
     let conflicts = 0;
     for (const k of Object.keys(clean)) if (db.days[k]) conflicts++;

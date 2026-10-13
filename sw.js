@@ -1,5 +1,5 @@
 // Hält die App offline verfügbar. Daten liegen nicht hier, sondern im localStorage.
-const CACHE = "schmerztagebuch-v1";
+const CACHE = "schmerztagebuch-v2";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
