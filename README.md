@@ -15,9 +15,10 @@ mit Notizen und Schnell-Markierungen, und über Tage, Wochen und Monate auswerte
   - **Ernährung:** Frühstück, Mittag, Abend. **Notizen** und **Medikamente** als Textfelder, dazu Markierungen.
   - „Wie letzter Eintrag“ übernimmt die Schmerzwerte des vorigen Tages, „Schmerzfrei“ trägt einen Tag ohne Schmerz ein.
 - **Auswertung:** Zeitraum (7 Tage bis alles), Gruppierung nach Tagen/Wochen/Monaten, Ø oder Maximum,
-  Schmerzverlauf (optional mit einer Körperstelle, Befinden, Schlaf oder Stuhl zum Vergleich), Befinden-Verlauf,
-  Ranking der Körperstellen, Vergleich mit dem vorherigen Zeitraum, Schmerz nach Markierungen, Wetter, Schlaf und
-  Wochentag. Beschwerden wie trockene Augen oder Blähungen zählen nicht in den Schmerz-Durchschnitt.
+  Schmerzverlauf je Bereich (Kopf, Schultern & Hände, Rumpf & Verdauung, Hüfte & Beine; Linien per Legende ein-/ausblendbar,
+  optional mit einer Vergleichsreihe), Befinden-Verlauf, Schlaf (Dauer und Qualität), Ranking der Körperstellen,
+  Vergleich mit dem vorherigen Zeitraum und Schmerz an Tagen mit/ohne Markierung. Beschwerden wie trockene Augen oder
+  Blähungen zählen nicht in den Schmerz-Durchschnitt.
 - **Sicherung:** Export als `.json` (zum Wiederherstellen) und `.csv` (Excel/Numbers), Import mit Zusammenführen
   oder Ersetzen.
 

@@ -29,6 +29,7 @@
   --series-1: #2a78d6;
   --series-2: #eb6834;
   --series-3: #1baf7a;
+  --series-4: #eda100;
   --good: #0ca30c;
   --critical: #d03b3b;
   --good-text: #006300;
@@ -55,6 +56,7 @@
     --series-1: #3987e5;
     --series-2: #d95926;
     --series-3: #199e70;
+    --series-4: #c98500;
     --good-text: #4cc94c;
     --critical-text: #f07a7a;
     --shadow: none;
@@ -67,7 +69,7 @@
   color-scheme: dark;
   --bg: #161615; --surface: #1f1f1e; --surface-2: #2a2a28; --line: #383835; --grid: #2e2e2c;
   --text: #f0efec; --text-2: #c3c2b7; --text-3: #8f8e86; --accent: #e0703f; --accent-ink: #1a1a19;
-  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --good-text: #4cc94c; --critical-text: #f07a7a; --shadow: none;
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500; --good-text: #4cc94c; --critical-text: #f07a7a; --shadow: none;
   --p0: #2a2a28;
   --p1: #3b2a22; --p2: #4e3022; --p3: #653623; --p4: #7e3c22; --p5: #9a4422;
   --p6: #b84f26; --p7: #d2602f; --p8: #e57c4c; --p9: #f29c72; --p10: #ffc2a1;
@@ -255,6 +257,13 @@ select {
 .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--text-2); margin: 2px 0 8px; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
+.legend button { border: 0; background: none; padding: 4px 0; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); }
+.legend button[aria-pressed="false"] { opacity: .4; text-decoration: line-through; }
+.legend i.dash { background: none !important; border-top: 2px dashed var(--text-2); height: 0; }
+.chart-h { font-size: 15px; margin: 14px 0 4px; }
+.chart-h + .sub { margin-bottom: 4px; }
+.sleep-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+.sleep-tiles .tile { box-shadow: none; background: var(--surface-2); border: 0; }
 .tooltip {
   position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line);
   border-radius: 8px; padding: 6px 9px; font-size: 13px; box-shadow: 0 4px 14px rgba(0,0,0,.15);
@@ -419,6 +428,16 @@ table.data td.num, table.data th.num { text-align: right; }
   </div>
 
   <div class="card">
+    <h2>Schlaf</h2>
+    <div class="sleep-tiles" id="sleep-tiles"></div>
+    <h3 class="chart-h">Schlafdauer (Stunden)</h3>
+    <div class="chart-wrap" id="sleep-h-chart"></div>
+    <h3 class="chart-h">Schlafqualität</h3>
+    <p class="sub">1 = 😫 sehr schlecht … 5 = 😴 sehr gut</p>
+    <div class="chart-wrap" id="sleep-q-chart"></div>
+  </div>
+
+  <div class="card">
     <h2>Körperstellen &amp; Beschwerden</h2>
     <p class="sub">Durchschnittlicher Wert je Stelle über alle Tage mit Schmerzeintrag im Zeitraum (ohne Wert = 0). Darunter: an wie vielen Tagen sie aufgetreten ist.</p>
     <div id="region-bars"></div>
@@ -436,17 +455,6 @@ table.data td.num, table.data th.num { text-align: right; }
     <div id="tag-cmp"></div>
   </div>
 
-  <div class="card">
-    <h2>Wetter, Schlaf &amp; Schmerz</h2>
-    <p class="sub" id="infl-sub"></p>
-    <div id="infl"></div>
-  </div>
-
-  <div class="card">
-    <h2>Wochentage</h2>
-    <p class="sub">Durchschnittlicher Tagesschmerz je Wochentag im Zeitraum.</p>
-    <div id="weekday-bars"></div>
-  </div>
 </section>
 
 <!-- ================= Daten ================= -->
@@ -652,6 +660,13 @@ function painRecorded(e) {
   return !!e && (e.touched || Object.values(e.p || {}).some(v => v > 0));
 }
 function dayValue(entry, metric) { return dayStats(entry)[metric]; }
+// Schmerz eines Überbereichs (Kopf, Schultern & Hände, …) an einem Tag
+const GROUP_IDS = GROUPS.map(g => new Set(g.regions.flatMap(r => r.pair ? [r.id + "_l", r.id + "_r"] : [r.id]).filter(isPain)));
+function groupValue(entry, gi, metric) {
+  const vals = Object.entries(entry.p || {}).filter(([id, v]) => v > 0 && GROUP_IDS[gi].has(id)).map(([, v]) => v);
+  if (!vals.length) return 0;
+  return metric === "max" ? Math.max(...vals) : vals.reduce((a, b) => a + b, 0) / vals.length;
+}
 
 // Alles, was sich im Verlauf vergleichen lässt
 const SERIES_DEFS = [
@@ -1196,18 +1211,22 @@ function renderStats() {
     tile("Ø Tagesverfassung", fmtNum(curS.verfassung), "0 = sehr schlecht, 10 = sehr gut"),
   );
 
-  // Verlauf Schmerz (+ Vergleichsreihe)
-  const series = [{ key: "a", name: F.metric === "avg" ? "Schmerz (Ø)" : "Schmerz (Max)", color: "var(--series-1)",
-    get: x => x.pain ? dayValue(x.e, F.metric) : null }];
-  if (F.region) series.push({ key: "r", name: SERIES[F.region].name, color: "var(--series-2)", get: x => x.e ? SERIES[F.region].get(x.e) : null });
+  // Verlauf Schmerz je Überbereich (+ Vergleichsreihe)
+  const series = GROUPS.map((g, gi) => ({ key: "g" + gi, name: g.name, color: `var(--series-${gi + 1})`,
+    get: x => x.pain ? groupValue(x.e, gi, F.metric) : null }));
+  if (F.region) series.push({ key: "r", name: SERIES[F.region].name, color: "var(--text-2)", dash: true, get: x => x.e ? SERIES[F.region].get(x.e) : null });
   const pts = bucketize(days, series);
   const groupWord = { day: "Tag", week: "Woche", month: "Monat" }[F.group];
   document.getElementById("trend-title").textContent = `Verlauf je ${groupWord}`;
   document.getElementById("trend-sub").textContent = F.group === "day"
-    ? (F.metric === "avg" ? "Ø der schmerzenden Stellen pro Tag (schmerzfreier Tag = 0)." : "Stärkster Schmerz pro Tag.")
-    : (F.metric === "avg" ? `Mittelwert der Tages-Ø je ${groupWord}.` : `Mittelwert der Tagesmaxima je ${groupWord}.`);
-  legend(document.getElementById("trend-legend"), series);
-  lineChart(document.getElementById("trend-chart"), pts, series, "Schmerzverlauf");
+    ? (F.metric === "avg" ? "Ø der schmerzenden Stellen je Bereich pro Tag (kein Schmerz im Bereich = 0)." : "Stärkster Schmerz je Bereich pro Tag.")
+    : (F.metric === "avg" ? `Ø der schmerzenden Stellen je Bereich, gemittelt je ${groupWord}.` : `Stärkster Schmerz je Bereich, gemittelt je ${groupWord}.`);
+  const drawTrend = () => {
+    const vis = series.filter(s => !hiddenSeries.has(s.key));
+    lineChart(document.getElementById("trend-chart"), pts, vis, "Schmerzverlauf je Bereich");
+  };
+  legend(document.getElementById("trend-legend"), series, drawTrend);
+  drawTrend();
   trendTable(pts, series);
 
   // Verlauf Befinden
@@ -1217,33 +1236,64 @@ function renderStats() {
   legend(document.getElementById("mood-legend"), moodSeries);
   lineChart(document.getElementById("mood-chart"), mpts, moodSeries, "Befinden", "Im Zeitraum wurde kein Befinden eingetragen.");
 
+  // Schlaf
+  const shPts = bucketize(days, [{ key: "h", get: x => x.e?.sl?.h ?? null }]);
+  const sqPts = bucketize(days, [{ key: "q", get: x => x.e?.sl?.q ?? null }]);
+  const sleepDays = days.filter(x => x.e?.sl);
+  const st = document.getElementById("sleep-tiles");
+  st.textContent = "";
+  const avgQ = mean(nn(sleepDays.map(x => x.e.sl.q ?? null)));
+  st.append(
+    tile("Ø Schlafdauer", fmtHours(mean(nn(sleepDays.map(x => x.e.sl.h ?? null))) ?? null), `${sleepDays.length} Nächte erfasst`),
+    tile("Ø Schlafqualität", avgQ == null ? "–" : `${SLEEP[Math.round(avgQ) - 1][0]} ${fmtNum(avgQ)}`, "von 5"),
+  );
+  lineChart(document.getElementById("sleep-h-chart"), shPts, [{ key: "h", name: "Schlafdauer", color: "var(--series-1)", unit: " h" }],
+    "Schlafdauer", "Im Zeitraum wurde keine Schlafdauer eingetragen.", { top: 12, step: 2, height: 170 });
+  lineChart(document.getElementById("sleep-q-chart"), sqPts, [{ key: "q", name: "Schlafqualität", color: "var(--series-1)" }],
+    "Schlafqualität", "Im Zeitraum wurde keine Schlafqualität eingetragen.", { top: 5, step: 1, height: 150, min: 1 });
+
   regionBars(days);
   periodCompare(curS, prev, start, end, len);
   tagCompare(days);
-  influence(days);
-  weekdayBars(days);
 }
-function legend(box, series) {
+const hiddenSeries = new Set();
+// Legende; mit redraw lassen sich Linien durch Antippen aus- und einblenden
+function legend(box, series, redraw) {
   box.textContent = "";
-  if (series.length > 1) for (const s of series) box.append(el("span", {}, el("i", { style: `background:${s.color}` }), s.name));
+  if (series.length < 2) return;
+  for (const s of series) {
+    const key = el("i", { class: s.dash ? "dash" : "", style: `background:${s.color}` });
+    if (!redraw) { box.append(el("span", {}, key, s.name)); continue; }
+    const b = el("button", { "aria-pressed": hiddenSeries.has(s.key) ? "false" : "true" }, key, s.name);
+    b.onclick = () => {
+      hiddenSeries.has(s.key) ? hiddenSeries.delete(s.key) : hiddenSeries.add(s.key);
+      b.setAttribute("aria-pressed", hiddenSeries.has(s.key) ? "false" : "true");
+      redraw();
+    };
+    box.append(b);
+  }
 }
 
 /* --- Liniendiagramm (SVG, eigene Umsetzung, funktioniert offline) --- */
-function lineChart(host, pts, series, label, emptyText) {
+function lineChart(host, pts, series, label, emptyText, opt = {}) {
   host.textContent = "";
-  if (!pts.some(p => p.n)) { host.append(el("div", { class: "empty", text: emptyText || "Im gewählten Zeitraum gibt es noch keine Einträge." })); return; }
-  const top = Math.max(10, Math.ceil(Math.max(...pts.flatMap(p => series.map(s => p[s.key] ?? 0))) / 2) * 2);
-  const W = Math.max(300, host.clientWidth || 340), H = 220;
+  if (!series.length) { host.append(el("div", { class: "empty", text: "Alle Linien ausgeblendet – in der Legende antippen." })); return; }
+  if (!pts.some(p => series.some(s => p[s.key] != null))) { host.append(el("div", { class: "empty", text: emptyText || "Im gewählten Zeitraum gibt es noch keine Einträge." })); return; }
+  const dataMax = Math.max(...pts.flatMap(p => series.map(s => p[s.key] ?? 0)));
+  const base = opt.top || 10, tickStep = opt.step || 2;
+  const top = Math.max(base, Math.ceil(dataMax / tickStep) * tickStep);
+  const lo = opt.min || 0;
+  const W = Math.max(300, host.clientWidth || 340), H = opt.height || 220;
   const m = { l: 26, r: 8, t: 10, b: 24 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
   const n = pts.length;
   const x = i => m.l + (n === 1 ? iw / 2 : (i / (n - 1)) * iw);
-  const y = v => m.t + ih - (v / top) * ih;
+  const y = v => m.t + ih - ((v - lo) / (top - lo)) * ih;
   const NS = "http://www.w3.org/2000/svg";
   const s = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); return e; };
   const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": label });
-  for (let v = 0; v <= top; v += top > 10 ? 4 : 2) {
-    svg.append(s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: v === 0 ? "var(--line)" : "var(--grid)", "stroke-width": 1 }));
+  for (let v = lo; v <= top; v += top - lo > 12 ? tickStep * 2 : tickStep) {
+    svg.append(s("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: v === lo ? "var(--line)" : "var(--grid)", "stroke-width": 1 }));
     const t = s("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }); t.textContent = v; svg.append(t);
   }
   const step = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(iw / 58))));
@@ -1257,11 +1307,13 @@ function lineChart(host, pts, series, label, emptyText) {
       if (v == null) { pen = false; return; }
       d += (pen ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1); pen = true;
     });
-    svg.append(s("path", { d, fill: "none", stroke: se.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+    const path = s("path", { d, fill: "none", stroke: se.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" });
+    if (se.dash) path.setAttribute("stroke-dasharray", "5 4");
+    svg.append(path);
     pts.forEach((p, i) => {
       const v = p[se.key]; if (v == null) return;
       const isolated = (i === 0 || pts[i - 1][se.key] == null) && (i === n - 1 || pts[i + 1][se.key] == null);
-      if (n <= 40 || isolated) svg.append(s("circle", { cx: x(i), cy: y(v), r: 4, fill: se.color, stroke: "var(--surface)", "stroke-width": 2 }));
+      if (!se.dash && (n <= 40 || isolated)) svg.append(s("circle", { cx: x(i), cy: y(v), r: 4, fill: se.color, stroke: "var(--surface)", "stroke-width": 2 }));
     });
   }
   const cross = s("line", { y1: m.t, y2: m.t + ih, stroke: "var(--text-3)", "stroke-width": 1, visibility: "hidden" });
@@ -1279,8 +1331,8 @@ function lineChart(host, pts, series, label, emptyText) {
     cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
     tip.textContent = "";
     tip.append(el("div", { class: "t", text: p.long }));
-    if (!p.n) tip.append(el("div", { class: "r" }, el("span", { text: "kein Eintrag" })));
-    else for (const se of series) tip.append(el("div", { class: "r" }, el("i", { style: `background:${se.color}` }), el("b", { text: fmtNum(p[se.key]) }), el("span", { text: se.name })));
+    if (!series.some(se => p[se.key] != null)) tip.append(el("div", { class: "r" }, el("span", { text: "kein Eintrag" })));
+    else for (const se of series) tip.append(el("div", { class: "r" }, el("i", { style: `background:${se.color}` + (se.dash ? ";height:0;border-top:2px dashed " + se.color : "") }), el("b", { text: fmtNum(p[se.key]) + (p[se.key] != null && se.unit ? se.unit : "") }), el("span", { text: se.name })));
     if (p.n && F.group !== "day") tip.append(el("div", { class: "r" }, el("span", { text: `${p.n} erfasste Tage` })));
     tip.style.display = "block";
     const cx = x(i) * (r.width / W);
@@ -1400,47 +1452,6 @@ function tagCompare(days) {
     host.append(el("div", { class: "cmp-row" }, el("span", { text: t }), el("b", { class: cls, text: fmtNum(w) }), el("span", { class: "muted", text: fmtNum(wo) }), el("span", { class: "muted", text: cnt })));
   }
   host.append(el("p", { class: "small", style: "margin:8px 0 0", text: `Kennzahl: ${F.metric === "avg" ? "Ø der schmerzenden Stellen" : "stärkster Schmerz"} pro Tag. Farbig, wenn der Unterschied mindestens 0,5 beträgt.` }));
-}
-
-/* --- Wetter & Schlaf: Ø Schmerz je Kategorie --- */
-function influence(days) {
-  const rec = days.filter(x => x.pain);
-  document.getElementById("infl-sub").textContent = `${F.metric === "avg" ? "Ø Schmerz" : "Ø Tagesmaximum"} an Tagen mit dem jeweiligen Wetter bzw. der jeweiligen Schlafqualität.`;
-  const host = document.getElementById("infl");
-  host.textContent = "";
-  const block = (title, list, get) => {
-    const rows = [];
-    list.forEach(([icon, name], i) => {
-      const vals = rec.filter(x => get(x.e) === i + 1).map(x => dayValue(x.e, F.metric));
-      if (vals.length) rows.push({ label: `${icon} ${name}`, v: mean(vals), sub: `${vals.length}×` });
-    });
-    host.append(el("div", { class: "small", style: "font-weight:600;margin:6px 0 4px", text: title }));
-    const box = el("div");
-    hbars(box, rows, 10, "Noch keine Tage mit Schmerz und dieser Angabe.");
-    host.append(box);
-  };
-  block("Wetter", WEATHER, e => e.w);
-  block("Schlafqualität", SLEEP, e => e.sl?.q);
-  // Schlafdauer in Gruppen
-  const groups = [["< 6 h", h => h < 6], ["6–8 h", h => h >= 6 && h < 8], ["≥ 8 h", h => h >= 8]];
-  const rows = [];
-  for (const [name, test] of groups) {
-    const vals = rec.filter(x => x.e.sl?.h != null && test(x.e.sl.h)).map(x => dayValue(x.e, F.metric));
-    if (vals.length) rows.push({ label: "Schlaf " + name, v: mean(vals), sub: `${vals.length}×` });
-  }
-  host.append(el("div", { class: "small", style: "font-weight:600;margin:10px 0 4px", text: "Schlafdauer" }));
-  const box = el("div");
-  hbars(box, rows, 10, "Noch keine Tage mit Schmerz und Schlafdauer.");
-  host.append(box);
-}
-
-/* --- Wochentage --- */
-function weekdayBars(days) {
-  const rec = days.filter(x => x.pain);
-  const by = Array.from({ length: 7 }, () => []);
-  for (const x of rec) by[dowMon(x.date)].push(dayValue(x.e, F.metric));
-  const rows = by.map((a, i) => ({ label: ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"][i], v: mean(a) || 0, n: a.length, sub: a.length ? `${a.length}×` : "" })).filter(r => r.n);
-  hbars(document.getElementById("weekday-bars"), rows, 10);
 }
 
 /* ------------------------------------------------------------------ *
